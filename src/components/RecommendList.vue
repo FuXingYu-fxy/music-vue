@@ -3,9 +3,9 @@
     <div v-for="item of dailyPlayList" :key="item.id" class="music-item">
       <a @click="goToMusicList(item.id)">
         <img :src="item.picUrl" alt="">
-        <p class="mask">{{ item.copywriter }}</p>
-        <p>{{ item.name }}</p>
       </a>
+      <p class="mask">{{ item.copywriter }}</p>
+      <p class="describe">{{ item.name }}</p>
     </div>
   </div>
 </template>
@@ -39,25 +39,22 @@ export default {
 .recommend-music {
   margin-top: 10px;
   display: grid;
-  /* grid-template-rows: repeat(4, 7.5rem); */
-  grid-template-rows: auto;
+  grid-auto-rows: auto;
   grid-template-columns:  repeat(8, 12.5%);
   gap: 1rem 0;
   justify-items: center;
   align-items: flex-start;
   justify-content: center;
-  max-height: calc(100% - 34px);
-  overflow-x: hidden;
 }
 
 .music-item {
-  width: 70%;
-  height: 45.5%;
+  margin: 0 8px;
   position: relative;
 
   img {
     width: 100%;
-    height: auto;
+    height: 100%;
+    //height: auto;
   }
 
   & > a {
@@ -65,29 +62,48 @@ export default {
     display: block;
   }
 
-  & > a:hover > p:nth-child(2) {
+  & > a:hover + .mask {
     opacity: 1;
   }
 
-  & > a p:nth-child(2) {
-    position: absolute;
-    z-index: 1;
-    font-size: 8px;
-    margin: 0;
-    top: 0;
-    text-align: center;
-    width: 100%;
-    background: #00000047;
-    color: white;
-  }
-
-  & > a P:nth-child(3) {
-    font-size: 100%;
-  }
 }
+
 .mask {
+  position: absolute;
+  z-index: 1;
+  font-size: 8px;
+  margin: 0;
+  top: 0;
+  text-align: center;
+  width: 100%;
+  background: #00000047;
+  color: white;
   opacity: 0;
   transition: .5s ease-out .2s;
+}
+
+// width <= 800px 时，启用下面的 css
+@media (max-width: 800px) {
+  .recommend-music {
+    grid-auto-rows: 160px;
+  }
+  .mask {
+    top: initial;
+    background-color: initial;
+    color: initial;
+    opacity: 1;
+  }
+  .describe {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .recommend-music {
+    grid-auto-rows: auto;
+  }
+  .mask {
+    display: none;
+  }
 }
 </style>
 
