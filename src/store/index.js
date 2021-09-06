@@ -1,12 +1,33 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import {
+  UPDATE_USER_INFO,
+  UPDATE_DAILY_PLAYLIST,
+} from '@/store/actionType';
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    // 后期将这些全部存入 localStorage 避免重复请求
+    userInfo: null,
+    dailyPlayList: null,
+  },
+  getters: {
+    getDailyPlayList(state) {
+      return state.dailyPlayList;
+    }
   },
   mutations: {
+    // 更新用户信息
+    [UPDATE_USER_INFO](state, payload) {
+      state.userInfo = payload;
+    },
+    
+    // 更新每日推荐歌单
+    [UPDATE_DAILY_PLAYLIST](state, payload) {
+      state.dailyPlayList = payload;
+    }
   },
   actions: {
   },
