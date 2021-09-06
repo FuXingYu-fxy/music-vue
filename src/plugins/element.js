@@ -12,7 +12,7 @@ import {
   Form,
   FormItem,
   Input,
-  Message,
+  Message, Card, Tag, Table, TableColumn,
 } from 'element-ui'
 
 Vue.use(Button);
@@ -26,5 +26,9 @@ Vue.use(Link);
 Vue.use(Form);
 Vue.use(FormItem);
 Vue.use(Input);
+Vue.use(Card);
+Vue.use(Tag);
+Vue.use(Table);
+Vue.use(TableColumn);
 
 Vue.prototype.$message = Message;

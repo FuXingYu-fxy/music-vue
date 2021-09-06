@@ -1,7 +1,7 @@
 <template>
   <div class="recommend-music">
     <div v-for="item of dailyPlayList" :key="item.id" class="music-item">
-      <a @click="goToMusicList(item.id)">
+      <a @click="goToPlayList(item.id)">
         <img :src="item.picUrl" alt="">
       </a>
       <p class="mask">{{ item.copywriter }}</p>
@@ -23,9 +23,13 @@ export default {
     }),
   },
   methods: {
-    goToMusicList(id) {
-      // this.$router.push({name: 'music', query: {playlistId: id}});
-      console.log(id);
+    goToPlayList(id) {
+      this.$router.push({
+        name: 'PlayList',
+        params: {
+          id,
+        }
+      })
     }
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓

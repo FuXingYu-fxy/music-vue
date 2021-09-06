@@ -20,7 +20,6 @@
 // @ is an alias to /src
 import {mapMutations} from 'vuex';
 import {UPDATE_DAILY_PLAYLIST} from '@/store/actionType';
-import axios from 'axios';
 import request from '@/request/request';
 import RecommendList from '@/components/RecommendList';
 
@@ -39,16 +38,6 @@ export default {
     toTop() {
       this.$refs.div.scrollIntoView();
     },
-    sendRequest() {
-      // 测试接口
-      this.isLoading = true;
-      axios.get('https://api.muxiaoguo.cn/api/Gushici')
-          .then(res => {
-            console.log(res.data);
-            this.isLoading = false;
-          })
-    },
-
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
   created() {
@@ -69,17 +58,22 @@ export default {
               }
             });
             this.updateDailyPlayList(dailyPlayList);
-
+          } else {
+            this.$message({
+              message: `未知错误, 状态码: ${data.code}`,
+              type: 'info'
+            })
           }
-        }).catch((err) => {
-      this.$message({
-        message: '发生错误, 请到控制面板查看',
-        type: 'error'
-      })
-      console.group('Login');
-      console.log(err);
-      console.groupEnd('Login');
-    })
+        })
+        .catch((err) => {
+          this.$message({
+            message: '发生错误, 请到控制面板查看',
+            type: 'error'
+          })
+          console.group('Login');
+          console.log(err);
+          console.groupEnd('Login');
+        })
   }
   // ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
 }

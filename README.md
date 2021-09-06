@@ -26,3 +26,6 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 # branch 
 * fix-style#1: 修改首页歌单布局样式
+
+# TODO
+* 优化 PlayList 懒加载

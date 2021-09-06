@@ -6,6 +6,7 @@ const About = () => import(/* webpackChunkName: "about" */ '../views/About.vue')
 const My = () => import('../views/My');
 const More = () => import('../views/More');
 const Login = () => import('../views/Login');
+const PlayList = () => import('../views/PlayList');
 
 Vue.use(VueRouter)
 
@@ -19,6 +20,13 @@ const routes = [
     path: '/home',
     name: 'Home',
     component: Home,
+  },
+  {
+    path: '/playList/:id',
+    name: 'PlayList',
+    component: PlayList,
+    props: true,
+    
   },
   {
     path: '/my',
