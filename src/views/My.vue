@@ -23,11 +23,11 @@
     <div class="recommend">
       <h3>Hi,帮助我们唐门不能群龙无首啊</h3>
       <h5>今日为你推荐</h5>
-      <el-tabs >
-        <el-tab-pane label="用户管理" name="first">今日推荐</el-tab-pane>
-        <el-tab-pane label="配置管理" name="second">私人FM</el-tab-pane>
-        <el-tab-pane label="角色管理" name="third">我的歌单</el-tab-pane>
-        <el-tab-pane label="定时任务补偿" name="fourth">定时任务补偿</el-tab-pane>
+      <el-tabs @tab-click="handleTabClick">
+        <el-tab-pane label="今日推荐" name="first" ><PlayList daily-songs/></el-tab-pane>
+        <el-tab-pane label="私人FM" name="second"><Demo/></el-tab-pane>
+        <el-tab-pane label="我的歌单" name="third">我的歌单组件</el-tab-pane>
+        <el-tab-pane label="尖叫榜" name="fourth"><el-button type="primary" @click="send">buttonCont</el-button></el-tab-pane>
       </el-tabs>
     </div>
   </div>
@@ -35,9 +35,13 @@
 
 <script>
 import {throttle} from '@/utils';
+import request from '@/request/request';
+const Demo = () => import('../components/Demo');
+const PlayList = () => import('../views/PlayList');
 
 export default {
   name: "My",
+  components: {Demo, PlayList},
   data() {
     return {
       bannerHeight: 0,
@@ -45,9 +49,23 @@ export default {
     }
   },
   methods: {
+    handleTabClick(tab) {
+      console.log(tab);
+      // 今日推荐 0
+      // 私人FM  1
+      // 我的歌单 2
+      // 尖叫榜   3
+
+    },
     setOffsetY: throttle(function () {
       this.offsetY = window.pageYOffset;
     }, 50),
+    send() {
+      request.get('/recommend/songs')
+        .then(({data}) => {
+          console.log(data);
+        })
+    }
   },
   computed: {
     dynamicHeight() {

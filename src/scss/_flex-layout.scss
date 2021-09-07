@@ -1,0 +1,12 @@
+@mixin flex-layout($directions) {
+  display: flex;
+  @if $directions == 'row' {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+  } @else {
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+  }
+}
