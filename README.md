@@ -29,3 +29,5 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 # TODO
 * 优化 PlayList 懒加载
+* 对每日的推荐歌曲, 推荐歌单直接存储到localstorage
+* 长列表虚拟滚动
