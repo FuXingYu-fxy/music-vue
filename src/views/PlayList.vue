@@ -40,20 +40,21 @@
       </el-col>
     </el-row>
     <div class="play-list-brief">
-      <el-row :gutter="10">
+      <el-row :gutter="10" type="flex" align="bottom">
         <el-col :span="6">
-          <span>歌曲列表</span>
+          <span class="play-list-brief-item" style="font-size: 2em">歌曲列表</span>
         </el-col>
         <el-col :span="3">
-          <span>{{ playList.trackIds.length }} 首歌曲</span>
+          <span class="play-list-brief-item">{{ playList.trackIds.length }} 首歌曲</span>
         </el-col>
         <el-col :span="10" :push="5">
-          <span><strong style="color: red">{{ playList.playCount }}</strong>次播放</span>
+          <span class="play-list-brief-item"><strong style="color: red">{{ playList.playCount }}</strong>次播放</span>
         </el-col>
       </el-row>
     </div>
     <el-divider/>
     <el-table
+        @cell-click="play"
         :data="tableData"
         style="width: 100%">
       <el-table-column
@@ -61,8 +62,15 @@
           width="50">
       </el-table-column>
       <el-table-column
-          prop="songTitle"
           label="歌曲标题">
+        <template v-slot="{row}">
+          <el-link
+              icon="el-icon-video-play"
+              :underline="false"
+          >
+            {{ row.songTitle }}
+          </el-link>
+        </template>
       </el-table-column>
       <el-table-column
           prop="durationTime"
@@ -79,14 +87,15 @@
       >
       </el-table-column>
     </el-table>
-    <el-button type="text" @click="loadRest" v-if="show" :loading="isLoading" >加载更多。。。</el-button>
+    <el-button type="text" @click="loadRest" v-if="show" :loading="isLoading">加载更多。。。</el-button>
   </div>
 </template>
 
 <script>
 import request from '@/request/request';
-// import {playList, } from '@/testData';
 import {parseSongInfo} from '@/utils';
+import {mapMutations} from 'vuex';
+import {UPDATE_CURRENT_PLAY} from '@/store/actionType';
 
 export default {
   name: "PlayList",
@@ -111,6 +120,14 @@ export default {
     }
   },
   methods: {
+    ...mapMutations({
+      updateCurrentPlay: UPDATE_CURRENT_PLAY,
+    }),
+    play(songInfo) {
+      const {album, artists, cover, durationTime, id, songTitle} = songInfo;
+      const currentPlaySong = {album, artists, cover, durationTime, id, songTitle};
+      this.updateCurrentPlay(currentPlaySong);
+    },
     // 加载剩余数据
     loadRest() {
       this.isLoading = true;
