@@ -71,9 +71,9 @@ export default {
           })
         }
       }).catch(err => {
-        console.group('Login');
+        console.group('Login submit');
         console.log(err);
-        console.groupEnd('Login');
+        console.groupEnd('Login submit');
       }).finally(() => {
         this.isLoading = false;
       })
