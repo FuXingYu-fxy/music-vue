@@ -18,6 +18,9 @@ export default new Vuex.Store({
   getters: {
     getDailyPlayList(state) {
       return state.dailyPlayList;
+    },
+    getUserInfo(state) {
+      return state.userInfo;
     }
   },
   mutations: {

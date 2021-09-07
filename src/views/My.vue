@@ -29,7 +29,7 @@
         </el-tab-pane>
 
         <el-tab-pane label="私人FM" name="second">
-          <Demo/>
+          <el-button type="primary" @click="send">私人FM</el-button>
         </el-tab-pane>
 
         <el-tab-pane label="我的歌单" name="third">
@@ -45,14 +45,15 @@
 </template>
 
 <script>
+import {mapGetters} from 'vuex';
 import {throttle} from '@/utils';
 import request from '@/request/request';
-import Demo from '@/components/Demo'
+
 const PlayList = () => import('../views/PlayList');
 
 export default {
   name: "My",
-  components: {Demo, PlayList},
+  components: {PlayList},
   data() {
     return {
       bannerHeight: 0,
@@ -65,13 +66,18 @@ export default {
       this.offsetY = window.pageYOffset;
     }, 50),
     send() {
-      request.get('/recommend/songs')
-          .then(({data}) => {
-            console.log(data);
-          })
+      const uid = this.getUserInfo.id;
+      request.get('/user/playlist', {
+        params: {
+          uid
+        }
+      }).then(({data}) => {
+        console.log(data);
+      })
     }
   },
   computed: {
+    ...mapGetters(['getUserInfo']),
     dynamicHeight() {
       let start = 0;
       let end = 200;

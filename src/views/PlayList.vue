@@ -9,7 +9,7 @@
         :subscribed-count="playList.subscribedCount"
         :tags="playList.tags"
     />
-    <p v-else>哈哈哈</p>
+    <Calendar/>
     <div class="play-list-brief">
       <el-row :gutter="10" type="flex" align="bottom">
         <el-col :span="6">
@@ -72,11 +72,12 @@ import request from '@/request/request';
 import {parseSongInfo} from '@/utils';
 import {mapMutations} from 'vuex';
 import {UPDATE_CURRENT_PLAY} from '@/store/actionType';
-// import PlayListDescription from '@/components/PlayListDescription'
+import PlayListDescription from '@/components/PlayListDescription'
+import Calendar from '@/components/Calendar';
 
 export default {
   name: "PlayList",
-  // components: {PlayListDescription},
+  components: {PlayListDescription, Calendar},
   props: {
     id: {
       type: String,
