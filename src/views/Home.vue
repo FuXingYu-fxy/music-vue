@@ -3,7 +3,7 @@
     <!--    轮播图-->
     <el-carousel :interval="4000" type="card" height="200px">
       <el-carousel-item v-for="item in 6" :key="item">
-        <h3 class="medium">{{ item }}</h3>
+        <img :class="`medium-${item}`" alt="">
       </el-carousel-item>
     </el-carousel>
     <el-divider/>
@@ -70,9 +70,9 @@ export default {
             message: '发生错误, 请到控制面板查看',
             type: 'error'
           })
-          console.group('Login');
+          console.group('Home created');
           console.log(err);
-          console.groupEnd('Login');
+          console.groupEnd('Home created');
         })
   }
   // ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
@@ -80,14 +80,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.el-carousel__item h3 {
-  color: #475669;
-  font-size: 3em;
-  opacity: 0.75;
-  line-height: 200px;
-  margin: 0;
-}
-
 .el-carousel__item:nth-child(2n) {
   background-color: #99a9bf;
 }
@@ -95,4 +87,13 @@ export default {
 .el-carousel__item:nth-child(2n+1) {
   background-color: #d3dce6;
 }
+
+@for $item from 1 through 6 {
+  .medium-#{$item} {
+    content: url("../image/img_#{$item}.png");
+    width: 100%;
+    height: auto;
+  }
+}
+
 </style>
