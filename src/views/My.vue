@@ -23,11 +23,22 @@
     <div class="recommend">
       <h3>Hi,帮助我们唐门不能群龙无首啊</h3>
       <h5>今日为你推荐</h5>
-      <el-tabs @tab-click="handleTabClick">
-        <el-tab-pane label="今日推荐" name="first" ><PlayList daily-songs/></el-tab-pane>
-        <el-tab-pane label="私人FM" name="second"><Demo/></el-tab-pane>
-        <el-tab-pane label="我的歌单" name="third">我的歌单组件</el-tab-pane>
-        <el-tab-pane label="尖叫榜" name="fourth"><el-button type="primary" @click="send">buttonCont</el-button></el-tab-pane>
+      <el-tabs v-model="activeName">
+        <el-tab-pane label="今日推荐" name="first">
+          <PlayList :daily-songs="true"/>
+        </el-tab-pane>
+
+        <el-tab-pane label="私人FM" name="second">
+          <Demo/>
+        </el-tab-pane>
+
+        <el-tab-pane label="我的歌单" name="third">
+          <h2>我的歌单</h2>
+        </el-tab-pane>
+
+        <el-tab-pane label="尖叫榜" name="fourth">
+          <h2>尖叫榜</h2>
+        </el-tab-pane>
       </el-tabs>
     </div>
   </div>
@@ -36,7 +47,7 @@
 <script>
 import {throttle} from '@/utils';
 import request from '@/request/request';
-const Demo = () => import('../components/Demo');
+import Demo from '@/components/Demo'
 const PlayList = () => import('../views/PlayList');
 
 export default {
@@ -46,25 +57,18 @@ export default {
     return {
       bannerHeight: 0,
       offsetY: 0,
+      activeName: 'third',
     }
   },
   methods: {
-    handleTabClick(tab) {
-      console.log(tab);
-      // 今日推荐 0
-      // 私人FM  1
-      // 我的歌单 2
-      // 尖叫榜   3
-
-    },
     setOffsetY: throttle(function () {
       this.offsetY = window.pageYOffset;
     }, 50),
     send() {
       request.get('/recommend/songs')
-        .then(({data}) => {
-          console.log(data);
-        })
+          .then(({data}) => {
+            console.log(data);
+          })
     }
   },
   computed: {
@@ -88,11 +92,11 @@ export default {
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
   mounted() {
-    window.addEventListener('scroll', this.setOffsetY);
-    this.bannerHeight = this.$refs.banner.clientHeight;
+    // window.addEventListener('scroll', this.setOffsetY);
+    // this.bannerHeight = this.$refs.banner.clientHeight;
   },
   beforeDestroy() {
-    window.removeEventListener('scroll', this.setOffsetY);
+    // window.removeEventListener('scroll', this.setOffsetY);
   }
   // ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
 

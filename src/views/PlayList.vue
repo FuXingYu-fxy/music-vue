@@ -10,7 +10,6 @@
         :tags="playList.tags"
     />
     <p v-else>哈哈哈</p>
-
     <div class="play-list-brief">
       <el-row :gutter="10" type="flex" align="bottom">
         <el-col :span="6">
@@ -27,7 +26,9 @@
       </el-row>
     </div>
     <el-divider/>
+    <p v-if="initialDataIsLoading">加载中...</p>
     <el-table
+        v-else
         @cell-click="play"
         :data="tableData"
         style="width: 100%">
@@ -71,11 +72,11 @@ import request from '@/request/request';
 import {parseSongInfo} from '@/utils';
 import {mapMutations} from 'vuex';
 import {UPDATE_CURRENT_PLAY} from '@/store/actionType';
-import PlayListDescription from '@/components/PlayListDescription'
+// import PlayListDescription from '@/components/PlayListDescription'
 
 export default {
   name: "PlayList",
-  components: {PlayListDescription},
+  // components: {PlayListDescription},
   props: {
     id: {
       type: String,
@@ -86,8 +87,8 @@ export default {
   },
   data() {
     return {
-      // FIXME 创建 data 的时机比 created 早, 所以在 created 之前读取 data 中未初始化的数据会报错
-      playList: null,
+      initialDataIsLoading: true,
+      playList: {},
 
       restSongData: [],
       isLoading: false,
@@ -152,7 +153,7 @@ export default {
       requestUrl = '/recommend/songs'
       params = null;
     }
-    if (!params.id && !this.dailySongs) {
+    if (!this.id && !this.dailySongs) {
       throw new Error('歌单id 为空');
     }
 
@@ -160,19 +161,20 @@ export default {
       params: params,
     }).then(({data}) => {
       if (data.code === 200) {
-
         // 为了兼容多种 请求方式, playList 只能是一个对象
         if (this.dailySongs) {
-          let list = data.dailySongs.map(parseSongInfo);
+          // 没仔细看清楚, 原来这个接口返回的数据里还有一个data字段
+          data = data.data;
+          let list = data.dailySongs && data.dailySongs.map(parseSongInfo);
           let totalLen = list.length;
           this.playList = {list, totalLen};
-
+          this.initialDataIsLoading = false;
         } else {
           let list = data.playlist.tracks.map(parseSongInfo);
-          // 这里先不用解析 trackIds
           const {trackIds: totalList, playCount, description, tags, name, coverImgUrl, subscribedCount} = data.playlist;
           let totalLen = totalList.length;
           this.playList = {list, totalLen, totalList, playCount, description, tags, name, coverImgUrl, subscribedCount};
+          this.initialDataIsLoading = false;
         }
 
       } else {
