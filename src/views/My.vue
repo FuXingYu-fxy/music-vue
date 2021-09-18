@@ -25,7 +25,7 @@
       <h5>今日为你推荐</h5>
       <el-tabs v-model="activeName">
         <el-tab-pane label="今日推荐" name="first">
-            <p v-if="isInitialData">加载中。。。</p>
+            <p v-if="songDetails">加载中。。。</p>
             <PlayList
                 v-else
                 :song-details="songDetails"
