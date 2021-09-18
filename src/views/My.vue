@@ -31,9 +31,8 @@
         <el-tab-pane label="私人FM" name="second">
           <el-button type="primary" @click="send">私人FM</el-button>
         </el-tab-pane>
-
         <el-tab-pane label="我的歌单" name="third">
-          <h2>我的歌单</h2>
+          <UserFavoritePlayList @fuxingyu="send"/>
         </el-tab-pane>
 
         <el-tab-pane label="尖叫榜" name="fourth">
@@ -49,11 +48,12 @@ import {mapGetters} from 'vuex';
 import {throttle} from '@/utils';
 import request from '@/request/request';
 
+const UserFavoritePlayList = () => import('../components/UserFavoritePlayList');
 const PlayList = () => import('../views/PlayList');
 
 export default {
   name: "My",
-  components: {PlayList},
+  components: {PlayList, UserFavoritePlayList},
   data() {
     return {
       bannerHeight: 0,
@@ -64,9 +64,10 @@ export default {
   methods: {
     setOffsetY: throttle(function () {
       this.offsetY = window.pageYOffset;
-    }, 50),
+    }, 100),
     send() {
-      const uid = this.getUserInfo.id;
+      // const uid = this.getUserInfo.id;
+      const uid = 32953014;
       request.get('/user/playlist', {
         params: {
           uid

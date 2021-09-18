@@ -15,8 +15,6 @@ import {mapGetters} from 'vuex';
 
 export default {
   name: "RecommendList.vue",
-  // data() {
-  // },
   computed: {
     ...mapGetters({
       dailyPlayList: 'getDailyPlayList'

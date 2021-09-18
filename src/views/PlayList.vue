@@ -9,7 +9,7 @@
         :subscribed-count="playList.subscribedCount"
         :tags="playList.tags"
     />
-    <Calendar/>
+    <Calendar v-else/>
     <div class="play-list-brief">
       <el-row :gutter="10" type="flex" align="bottom">
         <el-col :span="6">
@@ -80,7 +80,7 @@ export default {
   components: {PlayListDescription, Calendar},
   props: {
     id: {
-      type: String,
+      type: Number,
     },
     dailySongs: {
       type: Boolean,
