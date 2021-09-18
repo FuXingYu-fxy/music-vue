@@ -25,7 +25,16 @@
       <h5>今日为你推荐</h5>
       <el-tabs v-model="activeName">
         <el-tab-pane label="今日推荐" name="first">
-          <PlayList :daily-songs="true"/>
+            <p v-if="isInitialData">加载中。。。</p>
+            <PlayList
+                v-else
+                :song-details="songDetails"
+                :total-len="totalLen"
+            >
+              <template v-slot:calendar>
+                <Calendar/>
+              </template>
+            </PlayList>
         </el-tab-pane>
 
         <el-tab-pane label="私人FM" name="second">
@@ -45,21 +54,57 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import {throttle} from '@/utils';
+import {parseSongInfo, throttle} from '@/utils';
 import request from '@/request/request';
+import Calendar from '@/components/Calendar';
 
 const UserFavoritePlayList = () => import('../components/UserFavoritePlayList');
-const PlayList = () => import('../views/PlayList');
+const PlayList = () => import('../components/PlayList');
 
 export default {
   name: "My",
-  components: {PlayList, UserFavoritePlayList},
+  components: {
+    PlayList,
+    UserFavoritePlayList,
+    Calendar,
+  },
+
   data() {
     return {
       bannerHeight: 0,
       offsetY: 0,
-      activeName: 'third',
+      activeName: 'first',
+      songDetails: null,
+      isInitialData: true,
     }
+  },
+  created() {
+    // 每日推荐歌曲的接口
+    request.post('/recommend/songs')
+        .then(({data}) => {
+          if (data.code === 200) {
+            // 注意这个接口返回的数据有两层data
+            this.songDetails = data.data.dailySongs.map(parseSongInfo);
+            this.isInitialData = false;
+          } else {
+            this.$message({
+              message: `未知错误, 状态码: ${data.code}`,
+              type: 'info'
+            })
+          }
+        })
+        .catch(err => {
+          this.$message({
+            message: '发生错误, 请到控制面板查看',
+            type: 'error'
+          })
+          console.group('PlayList loadRest');
+          console.log(err);
+          console.groupEnd('PlayList loadRest');
+        }).finally(() => {
+      this.isLoading = false;
+      this.show = false;
+    })
   },
   methods: {
     setOffsetY: throttle(function () {
@@ -95,6 +140,9 @@ export default {
       return {
         height: result + 'px',
       }
+    },
+    totalLen() {
+      return this.songDetails ? this.songDetails.length : 0;
     }
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓

@@ -66,7 +66,6 @@ export default {
   props: {
     ids: {
       type: Array,
-      required: true,
     },
     totalLen: {
       type: Number,
