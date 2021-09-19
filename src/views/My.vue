@@ -38,7 +38,7 @@
         </el-tab-pane>
 
         <el-tab-pane label="私人FM" name="second">
-          <el-button type="primary" @click="send">私人FM</el-button>
+          <PersonalFM/>
         </el-tab-pane>
         <el-tab-pane label="我的歌单" name="third">
           <UserFavoritePlayList
@@ -72,6 +72,7 @@ import {parseSongInfo, throttle} from '@/utils';
 import request from '@/request/request';
 import Calendar from '@/components/Calendar';
 import UserFavoritePlayList from '@/components/UserFavoritePlayList';
+import PersonalFM from '@/components/PersonalFM';
 
 // const UserFavoritePlayList = () => import('../components/UserFavoritePlayList');
 const PlayList = () => import('../components/PlayList');
@@ -82,6 +83,7 @@ export default {
     PlayList,
     UserFavoritePlayList,
     Calendar,
+    PersonalFM,
   },
 
   data() {

@@ -94,17 +94,15 @@ export default {
       updateCurrentPlay: UPDATE_CURRENT_PLAY,
     }),
     play(songInfo) {
-      const {album, artists, cover, durationTime, id, songTitle} = songInfo;
-      const currentPlaySong = {album, artists, cover, durationTime, id, songTitle};
+      // const {album, artists, cover, durationTime, id, songTitle} = songInfo;
+      // const currentPlaySong = {album, artists, cover, durationTime, id, songTitle};
       // 保存当前播放的音乐信息至 store
-      this.updateCurrentPlay(currentPlaySong);
-      console.log(currentPlaySong);
+      this.updateCurrentPlay(songInfo);
     },
   },
   watch: {
     ids: {
       handler(newIds) {
-        console.log(this.songDetails);
         if (this.songDetails) {
           // 如果用在每日推荐歌曲, 每日推荐歌曲的接口会直接返回音乐数据，不用再根据id请求
           this.playList = this.songDetails;
@@ -119,7 +117,6 @@ export default {
         }).then(({data}) => {
           if (data.code === 200) {
             this.playList = data.songs.map(parseSongInfo);
-            console.log(this.playList);
           } else {
             this.$message({
               message: `${data.msg}, 状态码: ${data.code}`,
