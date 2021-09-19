@@ -4,6 +4,9 @@
     <slot name="calendar"></slot>
     <div class="play-list-brief">
       <el-row :gutter="10" type="flex" align="bottom">
+        <el-col :span="3">
+          <slot name="back-button"></slot>
+        </el-col>
         <el-col :span="6">
           <span class="play-list-brief-item" style="font-size: 2em">歌曲列表</span>
         </el-col>
@@ -98,42 +101,45 @@ export default {
       console.log(currentPlaySong);
     },
   },
-
-  // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
-  created() {
-    if (this.songDetails) {
-      // 如果用在每日推荐歌曲, 每日推荐歌曲的接口会直接返回音乐数据，不用再根据id请求
-      this.playList = this.songDetails;
-      return;
-    }
-    const ids = this.ids.map(item => item.id);
-    // POST请求url必须添加时间戳,使每次请求url不一样,不然请求会被缓存
-    request.get('/song/detail', {
-      params: {
-        ids: ids.slice(0, 20).join(','),
-      }
-    }).then(({data}) => {
-      if (data.code === 200) {
-        this.playList = data.songs.map(parseSongInfo);
-      } else {
-        this.$message({
-          message: `${data.msg}, 状态码: ${data.code}`,
-          type: 'info'
+  watch: {
+    ids: {
+      handler(newIds) {
+        console.log(this.songDetails);
+        if (this.songDetails) {
+          // 如果用在每日推荐歌曲, 每日推荐歌曲的接口会直接返回音乐数据，不用再根据id请求
+          this.playList = this.songDetails;
+          return;
+        }
+        const ids = newIds.map(item => item.id);
+        // POST请求url必须添加时间戳,使每次请求url不一样,不然请求会被缓存
+        request.get('/song/detail', {
+          params: {
+            ids: ids.slice(0, 20).join(','),
+          }
+        }).then(({data}) => {
+          if (data.code === 200) {
+            this.playList = data.songs.map(parseSongInfo);
+            console.log(this.playList);
+          } else {
+            this.$message({
+              message: `${data.msg}, 状态码: ${data.code}`,
+              type: 'info'
+            })
+          }
+        }).catch(err => {
+          this.$message({
+            message: '发生错误, 请到控制面板查看',
+            type: 'error'
+          })
+          console.group('PlayList loadRest');
+          console.log(err);
+          console.groupEnd('PlayList loadRest');
         })
-      }
-    }).catch(err => {
-      this.$message({
-        message: '发生错误, 请到控制面板查看',
-        type: 'error'
-      })
-      console.group('PlayList loadRest');
-      console.log(err);
-      console.groupEnd('PlayList loadRest');
-    })
+      },
+      immediate: true,
+    }
   }
 }
-
-// ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
 </script>
 
 <style lang="scss" scoped>

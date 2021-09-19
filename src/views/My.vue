@@ -41,18 +41,21 @@
           <el-button type="primary" @click="send">私人FM</el-button>
         </el-tab-pane>
         <el-tab-pane label="我的歌单" name="third">
-          <transition>
-            <keep-alive>
-              <component
-                  :is="currentComponent"
-                  @goToPlayList="requestSongs"
-                  :ids="ids"
-                  :total-len="ids ? ids.length : 0"
-                  :key="currentIndex"
-              ></component>
-            </keep-alive>
-          </transition>
-          <!--          <UserFavoritePlayList @fuxingyu="send"/>-->
+          <UserFavoritePlayList
+              @goToPlayList="requestSongs"
+              v-show="showUserFavoritePlayList"
+          />
+          <p v-if="ids === null">加载中...</p>
+          <PlayList
+              v-else
+              :ids="ids"
+              :total-len="ids ? ids.length : 0"
+              v-show="!showUserFavoritePlayList"
+          >
+            <template v-slot:back-button>
+              <el-button type="primary" @click="toggle">返回</el-button>
+            </template>
+          </PlayList>
         </el-tab-pane>
 
         <el-tab-pane label="尖叫榜" name="fourth">
@@ -90,8 +93,7 @@ export default {
       isInitialData: true,
       ids: null,
       // 我的收藏歌单的组件列表
-      list: ['UserFavoritePlayList', 'PlayList'],
-      currentIndex: 0,
+      showUserFavoritePlayList: true,
     }
   },
   created() {
@@ -117,12 +119,12 @@ export default {
           console.group('PlayList loadRest');
           console.log(err);
           console.groupEnd('PlayList loadRest');
-        }).finally(() => {
-      this.isLoading = false;
-      this.show = false;
-    })
+        })
   },
   methods: {
+    toggle() {
+      this.showUserFavoritePlayList = !this.showUserFavoritePlayList;
+    },
     setOffsetY: throttle(function () {
       this.offsetY = window.pageYOffset;
     }, 100),
@@ -138,7 +140,6 @@ export default {
       })
     },
     requestSongs(playListId) {
-      console.log(playListId);
       // 根据 歌单id 请求歌单
       request.get('/playlist/detail', {
         params: {
@@ -147,10 +148,11 @@ export default {
       }).then(({data}) => {
         if (data.code === 200) {
           this.ids = data.playlist.trackIds;
-          this.currentIndex = 1;
+          // 改变用户收藏歌单和播放列表的显示
+          this.toggle();
         } else {
           this.$message({
-            message: `未知错误, 状态码: ${data.code}`,
+            message: `${data.msg}, 状态码: ${data.code}`,
             type: 'info'
           })
         }
@@ -187,9 +189,6 @@ export default {
     totalLen() {
       return this.songDetails ? this.songDetails.length : 0;
     },
-    currentComponent() {
-      return this.list[this.currentIndex];
-    }
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
   mounted() {
