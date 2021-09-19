@@ -66,7 +66,7 @@ export default {
           })
         } else {
           this.$message({
-            message: '账号或密码错误',
+            message: data.msg,
             type: 'error',
           })
         }

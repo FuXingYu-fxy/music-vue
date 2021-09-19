@@ -60,7 +60,7 @@ export default {
         this.songInfo = {playCount, trackIds, tags, name, subscribedCount, description, coverImgUrl, totalLen};
       } else {
         this.$message({
-          message: `未知错误, 状态码: ${data.code}`,
+          message: `${data.msg}, 状态码: ${data.code}`,
           type: 'info'
         })
       }

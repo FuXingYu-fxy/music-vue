@@ -60,7 +60,7 @@ export default {
             this.updateDailyPlayList(dailyPlayList);
           } else {
             this.$message({
-              message: `未知错误, 状态码: ${data.code}`,
+              message: `${data.msg}, 状态码: ${data.code}`,
               type: 'info'
             })
           }
