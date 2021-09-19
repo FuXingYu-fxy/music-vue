@@ -22,7 +22,7 @@ export default {
   },
   methods: {
     goToPlayList(id) {
-      console.log('前往音乐', id);
+      this.$emit("goToPlayList", id);
     }
   }
 };

@@ -25,23 +25,34 @@
       <h5>今日为你推荐</h5>
       <el-tabs v-model="activeName">
         <el-tab-pane label="今日推荐" name="first">
-            <p v-if="isInitialData">加载中。。。</p>
-            <PlayList
-                v-else
-                :song-details="songDetails"
-                :total-len="totalLen"
-            >
-              <template v-slot:calendar>
-                <Calendar/>
-              </template>
-            </PlayList>
+          <p v-if="isInitialData">加载中。。。</p>
+          <PlayList
+              v-else
+              :song-details="songDetails"
+              :total-len="totalLen"
+          >
+            <template v-slot:calendar>
+              <Calendar/>
+            </template>
+          </PlayList>
         </el-tab-pane>
 
         <el-tab-pane label="私人FM" name="second">
           <el-button type="primary" @click="send">私人FM</el-button>
         </el-tab-pane>
         <el-tab-pane label="我的歌单" name="third">
-          <UserFavoritePlayList @fuxingyu="send"/>
+          <transition>
+            <keep-alive>
+              <component
+                  :is="currentComponent"
+                  @goToPlayList="requestSongs"
+                  :ids="ids"
+                  :total-len="ids ? ids.length : 0"
+                  :key="currentIndex"
+              ></component>
+            </keep-alive>
+          </transition>
+          <!--          <UserFavoritePlayList @fuxingyu="send"/>-->
         </el-tab-pane>
 
         <el-tab-pane label="尖叫榜" name="fourth">
@@ -57,8 +68,9 @@ import {mapGetters} from 'vuex';
 import {parseSongInfo, throttle} from '@/utils';
 import request from '@/request/request';
 import Calendar from '@/components/Calendar';
+import UserFavoritePlayList from '@/components/UserFavoritePlayList';
 
-const UserFavoritePlayList = () => import('../components/UserFavoritePlayList');
+// const UserFavoritePlayList = () => import('../components/UserFavoritePlayList');
 const PlayList = () => import('../components/PlayList');
 
 export default {
@@ -76,6 +88,10 @@ export default {
       activeName: 'first',
       songDetails: null,
       isInitialData: true,
+      ids: null,
+      // 我的收藏歌单的组件列表
+      list: ['UserFavoritePlayList', 'PlayList'],
+      currentIndex: 0,
     }
   },
   created() {
@@ -120,6 +136,33 @@ export default {
       }).then(({data}) => {
         console.log(data);
       })
+    },
+    requestSongs(playListId) {
+      console.log(playListId);
+      // 根据 歌单id 请求歌单
+      request.get('/playlist/detail', {
+        params: {
+          id: playListId,
+        }
+      }).then(({data}) => {
+        if (data.code === 200) {
+          this.ids = data.playlist.trackIds;
+          this.currentIndex = 1;
+        } else {
+          this.$message({
+            message: `未知错误, 状态码: ${data.code}`,
+            type: 'info'
+          })
+        }
+      }).catch(err => {
+        this.$message({
+          message: '发生错误, 请到控制面板查看',
+          type: 'error'
+        })
+        console.group('PlayListContainer created');
+        console.log(err);
+        console.groupEnd('PlayListContainer created');
+      })
     }
   },
   computed: {
@@ -143,6 +186,9 @@ export default {
     },
     totalLen() {
       return this.songDetails ? this.songDetails.length : 0;
+    },
+    currentComponent() {
+      return this.list[this.currentIndex];
     }
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓

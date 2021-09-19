@@ -65,7 +65,10 @@ export default {
   name: "PlayList",
   props: {
     ids: {
-      type: Array,
+      // 传入的是一个对象数组, 其中必须存在 id 字段
+      validator(arr) {
+        return arr.every(item => typeof item.id !== 'undefined');
+      }
     },
     totalLen: {
       type: Number,
@@ -74,7 +77,8 @@ export default {
       type: Number,
     },
     songDetails: {
-      type: [],
+      // 也可以直接传入歌曲信息
+      type: Array,
     }
   },
   data() {
@@ -90,7 +94,7 @@ export default {
       const {album, artists, cover, durationTime, id, songTitle} = songInfo;
       const currentPlaySong = {album, artists, cover, durationTime, id, songTitle};
       // 保存当前播放的音乐信息至 store
-      // this.updateCurrentPlay(currentPlaySong);
+      this.updateCurrentPlay(currentPlaySong);
       console.log(currentPlaySong);
     },
   },
