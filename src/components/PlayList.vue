@@ -107,8 +107,11 @@ export default {
       return;
     }
     const ids = this.ids.map(item => item.id);
-    request.post('/song/detail', {
-      ids: ids.slice(0, 20).join(','),
+    // POST请求url必须添加时间戳,使每次请求url不一样,不然请求会被缓存
+    request.get('/song/detail', {
+      params: {
+        ids: ids.slice(0, 20).join(','),
+      }
     }).then(({data}) => {
       if (data.code === 200) {
         this.playList = data.songs.map(parseSongInfo);
