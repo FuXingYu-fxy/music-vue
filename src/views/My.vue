@@ -130,17 +130,6 @@ export default {
     setOffsetY: throttle(function () {
       this.offsetY = window.pageYOffset;
     }, 100),
-    send() {
-      // const uid = this.getUserInfo.id;
-      const uid = 32953014;
-      request.get('/user/playlist', {
-        params: {
-          uid
-        }
-      }).then(({data}) => {
-        console.log(data);
-      })
-    },
     requestSongs(playListId) {
       // 根据 歌单id 请求歌单
       request.get('/playlist/detail', {
