@@ -53,7 +53,7 @@
               v-show="!showUserFavoritePlayList"
           >
             <template v-slot:back-button>
-              <el-button type="primary" @click="toggle">返回</el-button>
+              <el-button type="primary" @click="toggle" size="mini">返回</el-button>
             </template>
           </PlayList>
         </el-tab-pane>
