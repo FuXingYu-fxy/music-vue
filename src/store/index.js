@@ -21,6 +21,9 @@ export default new Vuex.Store({
     },
     getUserInfo(state) {
       return state.userInfo;
+    },
+    getCurrentPlaySong(state) {
+      return state.currentPlaySong;
     }
   },
   mutations: {
