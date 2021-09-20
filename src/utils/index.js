@@ -25,36 +25,25 @@ function debounce(fn, ms, immediate = false) {
   let thisArg = null;
   let args = undefined;
   let timerId;
-  let counter = 0;
-  return function (nextState) {
-    // 把初始状态传进来,利用闭包,如果如果最后的状态和初始状态一样, 就不用重新发送请求
-    return function (...params) {
-      counter++;
-      if (timerId) {
-        clearTimeout(timerId);
-      } else {
-        if (immediate) {
-          // 如果 counter 当前是偶数, 位运算的结果就是 0(结果是偶数),奇数同理 
-          params.push(counter, nextState);
-          const result = fn.apply(this, params);
-          // 奇数是喜欢，偶数是不喜欢
-          nextState = (counter = counter & 1) === 0;
-          return result;
-        }
+  return function (...params) {
+    if (timerId) {
+      clearTimeout(timerId);
+    } else {
+      if (immediate) {
+        const result = fn.apply(this, params);
+        return result;
       }
-      thisArg = this;
-      args = params;
-      timerId = setTimeout(() => {
-        if (!immediate) {
-          args.push(counter, nextState);
-          const result = fn.apply(thisArg, args);
-          // 状态在执行函数后更改
-          nextState = (counter = counter & 1) === 0;
-          return result;
-        }
-        timerId = undefined;
-      }, ms);
     }
+    thisArg = this;
+    args = params;
+    timerId = setTimeout(() => {
+      if (!immediate) {
+        const result = fn.apply(thisArg, args);
+        // 状态在执行函数后更改
+        return result;
+      }
+      timerId = undefined;
+    }, ms);
   }
 }
 

@@ -73,7 +73,7 @@ import { parseSongInfo } from "@/utils";
 import { UPDATE_CURRENT_PLAY } from "@/store/actionType";
 import { mapMutations } from "vuex";
 import FMCard from "./FMCard.vue";
-import {debounce} from "@/utils/index.js";
+import { debounce } from "@/utils/index.js";
 
 export default {
   name: "PersonalFM",
@@ -111,52 +111,45 @@ export default {
     ...mapMutations({
       updateCurrentPlay: UPDATE_CURRENT_PLAY,
     }),
-    debouncedFn: debounce(function(url, id, ...args) {
-      // 倒数第二个参数是counter
-      // 倒数第一个参数是 initialState, 如果与最初的状态一致，就不用重新发送请求
-      let len = args.length;
-      let initialState = args[len - 1];
-      let counter = args[len - 2]
-      // 奇数就是喜欢, 偶数就是不喜欢, counter 是用来判断是否发送请求
-      let currentState = (counter & 1) === 0;
-      if (currentState === initialState) {
-        // 如果最后状态一样，就不用发送请求
-        console.log('和最初的状态一致, 不用发送请求');
-        return;
-      }
-      console.log('发送请求', url, id, (counter & 1) === 1 ? '喜欢': '不喜欢');
-      console.log(currentState);
-    }, 2000)(true),
+    debouncedFn: debounce(function (url, id, currentState) {
+      request
+        .get(url, {
+          params: {
+            id: id,
+            // 状态已经发生改变, 发送请求的是上一次的状态
+            like: !currentState,
+          },
+        })
+    }, 2000),
     getAccountInfo() {
-      request("/user/account").then(({ data }) => {
+      request("/artist/sublist").then(({ data }) => {
         console.log(data);
       });
     },
     getUserInfo() {
-      request("/user/subcount").then(({ data }) => {
+      request("/artist/sublist").then(({ data }) => {
         console.log(data);
       });
     },
     like() {
-      console.log("I like this music");
+      if (!this.PriFM) {
+        return;
+      }
       this.likeThisMusic = !this.likeThisMusic;
-      // 内部会额外再传入两个参数
-      this.debouncedFn('/like', '/歌曲id');
-      // request.get("/like", {
-      //   params: {
-      //     // 如果仅仅需要id, 可以直接从这个对象里拿取
-      //     id: this.PriFM.id,
-      //     like: this.likeThisMusic,
-      //   }
-      // })
-      // .then(({ data }) => {
-      //   console.log(data);
-      //   this.likeThisMusic = !this.likeThisMusic;
-      // });
+      this.debouncedFn("/like", this.PriFM.id, this.likeThisMusic);
     },
     dislike() {
-      console.log("I dislike this music");
+      if (!this.PriFM) {
+        return;
+      }
       this.disLikeThisMusic = !this.disLikeThisMusic;
+      request.get("/fm_trash", {
+        params: {
+          id: this.PriFM.id,
+        },
+      }).then(() => {
+        this.next();
+      })
     },
     showComment() {
       console.log("comment is loading...");
@@ -170,6 +163,9 @@ export default {
         ? currentPlayList.length <= index
         : true;
 
+      // 初始化状态
+      this.disLikeThisMusic = true;
+      this.likeThisMusic = true;
       if (!reRequest) {
         // 不用重新请求
         this.PriFM = currentPlayList[this.playListIndex++];
@@ -248,7 +244,7 @@ export default {
       };
     },
     heart() {
-      return this.likeThisMusic ? 'regular/heart' : 'heart';
+      return this.likeThisMusic ? "regular/heart" : "heart";
     },
   },
 };
