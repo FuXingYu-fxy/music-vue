@@ -4,7 +4,7 @@
     <slot name="calendar"></slot>
     <div class="play-list-brief">
       <el-row :gutter="10" type="flex" align="bottom">
-        <el-col :span="3">
+        <el-col :span="2">
           <slot name="back-button"></slot>
         </el-col>
         <el-col :span="6">
@@ -15,7 +15,7 @@
           <span class="play-list-brief-item">{{ totalLen }} 首歌曲</span>
         </el-col>
 
-        <el-col :span="10" :push="5" v-if="playCount">
+        <el-col :span="6" :push="5" v-if="playCount">
           <span class="play-list-brief-item"><strong style="color: red">{{ playCount }}</strong>次播放</span>
         </el-col>
       </el-row>
