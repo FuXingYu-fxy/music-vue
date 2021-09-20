@@ -27,11 +27,12 @@
           />
           <v-icon
             @click="like"
-            name="regular/heart"
+            :name="heart"
             :scale="size"
             title="喜欢"
             :style="{
               cursor: 'pointer',
+              color: likeThisMusic ? '' : 'teal',
             }"
           />
           <v-icon
@@ -41,6 +42,7 @@
             title="不喜欢"
             :style="{
               cursor: 'pointer',
+              color: disLikeThisMusic ? '' : 'gray',
             }"
           />
           <v-icon
@@ -55,7 +57,11 @@
         </div>
       </div>
     </div>
-    <FMCard/>
+    <FMCard />
+    <div class="daihuishanchu">
+      <el-button @click="getAccountInfo">获取账号信息</el-button>
+      <el-button @click="getUserInfo">获取用户信息</el-button>
+    </div>
   </div>
 </template>
 
@@ -66,7 +72,8 @@ import request from "@/request/request";
 import { parseSongInfo } from "@/utils";
 import { UPDATE_CURRENT_PLAY } from "@/store/actionType";
 import { mapMutations } from "vuex";
-import FMCard from './FMCard.vue';
+import FMCard from "./FMCard.vue";
+import {debounce} from "@/utils/index.js";
 
 export default {
   name: "PersonalFM",
@@ -87,22 +94,69 @@ export default {
       // 当前音乐的id
       currentPlayId: undefined,
 
-      // 当前的FM 列表, 获取玩后会重新请求
+      // 当前的FM 列表, 请求一次后返回一个数组, 将数组中的音乐播放完后,会重新请求
       currentPlayList: null,
 
       // 当前索引, 越界后会重新请求
       playListIndex: 0,
+
+      // 喜欢歌曲时, 要传入true
+      likeThisMusic: true,
+
+      // 不喜欢这首音乐, 系统以后不会再推荐
+      disLikeThisMusic: true,
     };
   },
   methods: {
     ...mapMutations({
       updateCurrentPlay: UPDATE_CURRENT_PLAY,
     }),
+    debouncedFn: debounce(function(url, id, ...args) {
+      // 倒数第二个参数是counter
+      // 倒数第一个参数是 initialState, 如果与最初的状态一致，就不用重新发送请求
+      let len = args.length;
+      let initialState = args[len - 1];
+      let counter = args[len - 2]
+      // 奇数就是喜欢, 偶数就是不喜欢, counter 是用来判断是否发送请求
+      let currentState = (counter & 1) === 0;
+      if (currentState === initialState) {
+        // 如果最后状态一样，就不用发送请求
+        console.log('和最初的状态一致, 不用发送请求');
+        return;
+      }
+      console.log('发送请求', url, id, (counter & 1) === 1 ? '喜欢': '不喜欢');
+      console.log(currentState);
+    }, 2000)(true),
+    getAccountInfo() {
+      request("/user/account").then(({ data }) => {
+        console.log(data);
+      });
+    },
+    getUserInfo() {
+      request("/user/subcount").then(({ data }) => {
+        console.log(data);
+      });
+    },
     like() {
       console.log("I like this music");
+      this.likeThisMusic = !this.likeThisMusic;
+      // 内部会额外再传入两个参数
+      this.debouncedFn('/like', '/歌曲id');
+      // request.get("/like", {
+      //   params: {
+      //     // 如果仅仅需要id, 可以直接从这个对象里拿取
+      //     id: this.PriFM.id,
+      //     like: this.likeThisMusic,
+      //   }
+      // })
+      // .then(({ data }) => {
+      //   console.log(data);
+      //   this.likeThisMusic = !this.likeThisMusic;
+      // });
     },
     dislike() {
       console.log("I dislike this music");
+      this.disLikeThisMusic = !this.disLikeThisMusic;
     },
     showComment() {
       console.log("comment is loading...");
@@ -190,10 +244,13 @@ export default {
   computed: {
     FMContainer() {
       return {
-        minHeight: '380px',
-      }
-    }
-  }
+        minHeight: "380px",
+      };
+    },
+    heart() {
+      return this.likeThisMusic ? 'regular/heart' : 'heart';
+    },
+  },
 };
 </script>
 

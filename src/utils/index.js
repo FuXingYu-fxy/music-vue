@@ -13,32 +13,48 @@ function formatDuration(dt) {
 }
 
 /**
- * 防抖装饰器
+ * 防抖装饰器, 新增 counter 计数函数调用次数当用户频繁点击 点赞/收藏 
+ * 等需要及时反馈的按钮时, 将需要发送请求的部分功能抽离成一个函数, 反馈
+ * 及时刷新，请求根据最后 counter 的奇偶性进行发送
  * @param fn
  * @param ms 忽略 ms 内的连续调用
  * @param immediate 是否立即执行, 默认 false, 立即执行代表在 ms 内连续调用只会执行一次
- * @return {(function(...[*]=): void)|*}
+ * @returns 注意, 现在debounce 需要两次返回才是最后被debounce的函数
  */
 function debounce(fn, ms, immediate = false) {
   let thisArg = null;
   let args = undefined;
   let timerId;
-  return function (...params) {
-    if (timerId) {
-      clearTimeout(timerId);
-    } else {
-      if (immediate) {
-        return fn.apply(this, params);
+  let counter = 0;
+  return function (nextState) {
+    // 把初始状态传进来,利用闭包,如果如果最后的状态和初始状态一样, 就不用重新发送请求
+    return function (...params) {
+      counter++;
+      if (timerId) {
+        clearTimeout(timerId);
+      } else {
+        if (immediate) {
+          // 如果 counter 当前是偶数, 位运算的结果就是 0(结果是偶数),奇数同理 
+          params.push(counter, nextState);
+          const result = fn.apply(this, params);
+          // 奇数是喜欢，偶数是不喜欢
+          nextState = (counter = counter & 1) === 0;
+          return result;
+        }
       }
+      thisArg = this;
+      args = params;
+      timerId = setTimeout(() => {
+        if (!immediate) {
+          args.push(counter, nextState);
+          const result = fn.apply(thisArg, args);
+          // 状态在执行函数后更改
+          nextState = (counter = counter & 1) === 0;
+          return result;
+        }
+        timerId = undefined;
+      }, ms);
     }
-    thisArg = this;
-    args = params;
-    timerId = setTimeout(() => {
-      if (!immediate) {
-        return fn.apply(thisArg, args);
-      }
-      timerId = undefined;
-    }, ms);
   }
 }
 
@@ -76,7 +92,7 @@ function parseSongInfo(item) {
   // tns 是歌曲别名数组 tns[0] 是名字, 注意!!! 只有个别歌有 tns 这个字段
   // ar 是作者数组， ar[0].name 是作者名
   // al 是专辑, 一个对象
-  const {name, ar, id, tns, dt, al} = item;
+  const { name, ar, id, tns, dt, al } = item;
   const songAlias = tns && tns.join('/');
   const artists = ar.length && ar.map(artist => artist.name).join('/');
   // 歌曲标题 时长 歌手  专辑
