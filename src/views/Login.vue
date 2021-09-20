@@ -54,10 +54,12 @@ export default {
         if (data.code === 200) {
           const {id, userName, vipType, viptypeVersion, anonimousUser} = data.account;
           // gender  0-男性  1-女性
-          const {avatarUrl, nickname, gender} = data.profile;
+          // follows 关注的人
+          // followeds 自己被多少人关注
+          const {avatarUrl, nickname, gender, followeds, follows} = data.profile;
           const token = data.token;
           const account = {id, userName, vipType, viptypeVersion, anonimousUser};
-          const profile = {avatarUrl, nickname, gender};
+          const profile = {avatarUrl, nickname, gender, followeds, follows};
           // 将用户信息保存到 store 中
           this.updateUserInfo({account, profile, token});
           // 跳转路由
