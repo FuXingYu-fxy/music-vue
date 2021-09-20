@@ -13,21 +13,21 @@
         <div class="summary-info">
           <v-icon name="regular/play-circle" />
           <span
-            >你播放了<strong>{{ 300 }}</strong
+            >你播放了<strong>{{ listenSongs }}</strong
             >首音乐</span
           >
         </div>
         <div class="summary-info">
           <v-icon name="regular/heart" />
           <span
-            >你喜欢了<strong>{{ 300 }}</strong
+            >你喜欢了<strong>{{ likedSongs }}</strong
             >首音乐</span
           >
         </div>
         <div class="summary-info">
           <v-icon name="folder-plus" />
           <span
-            >你收藏了<strong>{{ 300 }}</strong
+            >你收藏了<strong>{{ artistCount }}</strong
             >位歌手</span
           >
         </div>
@@ -40,14 +40,44 @@
 <script>
 import "vue-awesome/icons";
 import Icon from "vue-awesome/components/Icon";
+import request from "@/request/request.js";
+// import {mapState} from 'vuex';
 
 export default {
   name: "FMCard",
   data() {
-    return {};
+    return {
+      // ...mapState(['userInfo']),
+      uid: "245947021",
+      listenSongs: 0,
+      artistCount: 10,
+      likedSongs: 0,
+    };
   },
   components: {
     "v-icon": Icon,
+  },
+  watch: {
+    uid: {
+      handler(id) {
+        request(`/user/detail?uid=${id}`).then(({ data }) => {
+          if (data.code === 200) {
+            this.listenSongs = data.listenSongs;
+          }
+        });
+        request(`/likelist?uid=${id}`).then(({ data }) => {
+          if (data.code === 200) {
+            this.likedSongs = data.ids.length;
+          }
+        });
+        request("/user/subcount").then(({ data }) => {
+          if (data.code === 200) {
+            this.artistCount = data.artistCount;
+          }
+        });
+      },
+      immediate: true,
+    },
   },
 };
 </script>
@@ -89,16 +119,16 @@ export default {
 }
 strong {
   color: $theme-color;
+  font-size: large;
 }
 .summary {
   background-color: #8080801a;
   border-radius: 15px;
   & > div {
-    @include flex-layout('row');
-    justify-content: center;
+    @include flex-layout("row");
     margin: 8px 0;
-    & > span {
-      margin-left: 5px;
+    & > * {
+      margin-left: 20px;
     }
   }
 }
