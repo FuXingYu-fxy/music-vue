@@ -113,6 +113,7 @@ export default {
         request.get('/song/detail', {
           params: {
             ids: ids.slice(0, 20).join(','),
+            timestamp: Date.now(),
           }
         }).then(({data}) => {
           if (data.code === 200) {
