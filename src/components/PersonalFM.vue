@@ -59,8 +59,7 @@
     </div>
     <FMCard />
     <div class="daihuishanchu">
-      <el-button @click="getAccountInfo">获取账号信息</el-button>
-      <el-button @click="getUserInfo">获取用户信息</el-button>
+      <el-button @click="getTestAPI">获取信息</el-button>
     </div>
   </div>
 </template>
@@ -121,13 +120,8 @@ export default {
           },
         })
     }, 2000),
-    getAccountInfo() {
-      request("/artist/sublist").then(({ data }) => {
-        console.log(data);
-      });
-    },
-    getUserInfo() {
-      request("/artist/sublist").then(({ data }) => {
+    getTestAPI() {
+      request("/toplist/detail").then(({ data }) => {
         console.log(data);
       });
     },

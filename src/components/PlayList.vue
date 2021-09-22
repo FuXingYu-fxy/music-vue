@@ -1,5 +1,6 @@
 <template>
-  <div class="play-list-container">
+  <p v-if="ids === undefined && songDetails === undefined">加载中...</p>
+  <div class="play-list-container" v-else>
     <slot name="play-list-description"></slot>
     <slot name="calendar"></slot>
     <div class="play-list-brief">
@@ -108,6 +109,7 @@ export default {
           this.playList = this.songDetails;
           return;
         }
+        if (!newIds) return;
         const ids = newIds.map(item => item.id);
         // POST请求url必须添加时间戳,使每次请求url不一样,不然请求会被缓存
         request.get('/song/detail', {
