@@ -1,6 +1,6 @@
 <template>
   <div style="height: 200vh">
-    <div class="banner" ref="banner" :style="dynamicHeight">
+    <div class="banner" ref="banner">
       <img class="avatar" alt="avatar" />
       <div class="user-profile">
         <h1>帮主我们唐门不能群龙无首啊</h1>
@@ -97,6 +97,7 @@ const eventType = {
 };
 // const UserFavoritePlayList = () => import('../components/UserFavoritePlayList');
 const PlayList = () => import("../components/PlayList");
+// import {throttle} from '@/utils';
 
 export default {
   name: "My",
@@ -110,8 +111,6 @@ export default {
 
   data() {
     return {
-      bannerHeight: 0,
-      offsetY: 0,
       activeName: "first",
       songDetails: null,
       isInitialData: true,
@@ -151,15 +150,21 @@ export default {
       });
   },
   methods: {
+    updateHeight: throttle(function () {
+      let recommend = document.querySelector(".recommend");
+      let referenceHeight = document.querySelector(".banner").clientHeight;
+      let start = 0;
+      let end = 200;
+      let rate = window.pageYOffset / (end - start);
+      let offset = rate * referenceHeight;
+      recommend.style.transform = `translateY(-${offset}px)`;
+    }, 100),
     toggleScreamPlayListState() {
       this.showScreamPlayList = !this.showScreamPlayList;
     },
     toggle() {
       this.showUserFavoritePlayList = !this.showUserFavoritePlayList;
     },
-    setOffsetY: throttle(function () {
-      this.offsetY = window.pageYOffset;
-    }, 100),
     requestSongs(playListId, type) {
       // 根据 歌单id 请求歌单
       request
@@ -200,40 +205,26 @@ export default {
   },
   computed: {
     ...mapGetters(["getUserInfo"]),
-    dynamicHeight() {
-      let start = 0;
-      let end = 200;
-      if (this.bannerHeight === 0) {
-        return;
-      }
-      let rate = (end - this.offsetY) / (end - start);
-      let result = rate * this.bannerHeight;
-      if (result <= 0) {
-        return {
-          height: 0 + "px",
-        };
-      }
-      return {
-        height: result + "px",
-      };
-    },
     totalLen() {
       return this.songDetails ? this.songDetails.length : 0;
     },
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
   mounted() {
-    // window.addEventListener('scroll', this.setOffsetY);
-    // this.bannerHeight = this.$refs.banner.clientHeight;
+    window.addEventListener("scroll", this.updateHeight);
   },
   beforeDestroy() {
-    // window.removeEventListener('scroll', this.setOffsetY);
+    window.removeEventListener("scroll", this.updateHeight);
   },
   // ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
 };
 </script>
 
 <style lang="scss" scoped>
+.recommend {
+  transition: .5s;
+  background: white;
+}
 .banner {
   margin-top: 10px;
   background-image: url("../image/music-player.jpg");
