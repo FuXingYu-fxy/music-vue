@@ -1,7 +1,7 @@
 <template>
   <div style="height: 200vh">
     <div class="banner" ref="banner" :style="dynamicHeight">
-      <img class="avatar" alt="avatar">
+      <img class="avatar" alt="avatar" />
       <div class="user-profile">
         <h1>帮主我们唐门不能群龙无首啊</h1>
         <ul>
@@ -25,41 +25,57 @@
       <h5>今日为你推荐</h5>
       <el-tabs v-model="activeName">
         <el-tab-pane label="今日推荐" name="first">
-          <p v-if="isInitialData">加载中。。。</p>
-          <PlayList
-              v-else
-              :song-details="songDetails"
-              :total-len="totalLen"
-          >
+          <PlayList :song-details="songDetails" :total-len="totalLen">
             <template v-slot:calendar>
-              <Calendar/>
+              <Calendar />
             </template>
           </PlayList>
         </el-tab-pane>
 
         <el-tab-pane label="私人FM" name="second">
-          <PersonalFM/>
+          <PersonalFM />
         </el-tab-pane>
         <el-tab-pane label="我的歌单" name="third">
           <UserFavoritePlayList
-              @goToPlayList="requestSongs"
-              v-show="showUserFavoritePlayList"
+            @goToPlayList="requestSongs"
+            v-show="showUserFavoritePlayList"
           />
-          <p v-if="ids === null">加载中...</p>
           <PlayList
-              v-else
-              :ids="ids"
-              :total-len="ids ? ids.length : 0"
-              v-show="!showUserFavoritePlayList"
+            :ids="ids"
+            :total-len="ids ? ids.length : 0"
+            v-show="!showUserFavoritePlayList"
           >
             <template v-slot:back-button>
-              <el-button type="primary" @click="toggle" size="mini">返回</el-button>
+              <el-button type="primary" @click="toggle" size="mini"
+                >返回</el-button
+              >
             </template>
           </PlayList>
         </el-tab-pane>
 
         <el-tab-pane label="尖叫榜" name="fourth">
-          <h2>尖叫榜</h2>
+          <div>
+            <div class="scream">
+              <HotPlayList
+                v-show="showScreamPlayList"
+                @goToPlayList="requestSongs"
+              />
+            </div>
+            <PlayList
+              :ids="screamPlayListIds"
+              :total-len="screamPlayListIds ? screamPlayListIds.length : 0"
+              v-show="!showScreamPlayList"
+            >
+              <template v-slot:back-button>
+                <el-button
+                  type="primary"
+                  @click="toggleScreamPlayListState"
+                  size="mini"
+                  >返回</el-button
+                >
+              </template>
+            </PlayList>
+          </div>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -67,15 +83,20 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex';
-import {parseSongInfo, throttle} from '@/utils';
-import request from '@/request/request';
-import Calendar from '@/components/Calendar';
-import UserFavoritePlayList from '@/components/UserFavoritePlayList';
-import PersonalFM from '@/components/PersonalFM';
+import { mapGetters } from "vuex";
+import { parseSongInfo, throttle } from "@/utils";
+import request from "@/request/request";
+import Calendar from "@/components/Calendar";
+import UserFavoritePlayList from "@/components/UserFavoritePlayList";
+import PersonalFM from "@/components/PersonalFM";
+import HotPlayList from "../components/HotPlayList.vue";
 
+const eventType = {
+  HOTPLAYLIST: "HotPlayList",
+  USERFAVORITEPLAYLiST: "UserFavoritePlayList",
+};
 // const UserFavoritePlayList = () => import('../components/UserFavoritePlayList');
-const PlayList = () => import('../components/PlayList');
+const PlayList = () => import("../components/PlayList");
 
 export default {
   name: "My",
@@ -84,82 +105,101 @@ export default {
     UserFavoritePlayList,
     Calendar,
     PersonalFM,
+    HotPlayList,
   },
 
   data() {
     return {
       bannerHeight: 0,
       offsetY: 0,
-      activeName: 'first',
+      activeName: "first",
       songDetails: null,
       isInitialData: true,
       ids: null,
       // 我的收藏歌单的组件列表
       showUserFavoritePlayList: true,
-    }
+      // 尖叫榜
+      showScreamPlayList: true,
+      // 尖叫榜的id
+      screamPlayListIds: null,
+    };
   },
   created() {
     // 每日推荐歌曲的接口
-    request.post('/recommend/songs')
-        .then(({data}) => {
-          if (data.code === 200) {
-            // 注意这个接口返回的数据有两层data
-            this.songDetails = data.data.dailySongs.map(parseSongInfo);
-            this.isInitialData = false;
-          } else {
-            this.$message({
-              message: `${data.msg}, 状态码: ${data.code}`,
-              type: 'info'
-            })
-          }
-        })
-        .catch(err => {
+    request
+      .post("/recommend/songs")
+      .then(({ data }) => {
+        if (data.code === 200) {
+          // 注意这个接口返回的数据有两层data
+          this.songDetails = data.data.dailySongs.map(parseSongInfo);
+          this.isInitialData = false;
+        } else {
           this.$message({
-            message: '发生错误, 请到控制面板查看',
-            type: 'error'
-          })
-          console.group('PlayList loadRest');
-          console.log(err);
-          console.groupEnd('PlayList loadRest');
-        })
+            message: `${data.msg}, 状态码: ${data.code}`,
+            type: "info",
+          });
+        }
+      })
+      .catch((err) => {
+        this.$message({
+          message: "发生错误, 请到控制面板查看",
+          type: "error",
+        });
+        console.group("PlayList loadRest");
+        console.log(err);
+        console.groupEnd("PlayList loadRest");
+      });
   },
   methods: {
+    toggleScreamPlayListState() {
+      this.showScreamPlayList = !this.showScreamPlayList;
+    },
     toggle() {
       this.showUserFavoritePlayList = !this.showUserFavoritePlayList;
     },
     setOffsetY: throttle(function () {
       this.offsetY = window.pageYOffset;
     }, 100),
-    requestSongs(playListId) {
+    requestSongs(playListId, type) {
       // 根据 歌单id 请求歌单
-      request.get('/playlist/detail', {
-        params: {
-          id: playListId,
-        }
-      }).then(({data}) => {
-        if (data.code === 200) {
-          this.ids = data.playlist.trackIds;
-          // 改变用户收藏歌单和播放列表的显示
-          this.toggle();
-        } else {
-          this.$message({
-            message: `${data.msg}, 状态码: ${data.code}`,
-            type: 'info'
-          })
-        }
-      }).catch(err => {
-        this.$message({
-          message: '发生错误, 请到控制面板查看',
-          type: 'error'
+      request
+        .get("/playlist/detail", {
+          params: {
+            id: playListId,
+          },
         })
-        console.group('PlayListContainer created');
-        console.log(err);
-        console.groupEnd('PlayListContainer created');
-      })
-    }
+        .then(({ data }) => {
+          if (data.code === 200) {
+            const ids = data.playlist.trackIds;
+            if (type === eventType.USERFAVORITEPLAYLiST) {
+              this.ids = ids;
+              // 改变用户收藏歌单和播放列表的显示
+              this.toggle();
+            }
+            if (type === eventType.HOTPLAYLIST) {
+              this.screamPlayListIds = ids;
+              this.toggleScreamPlayListState();
+            }
+          } else {
+            this.$message({
+              message: `${data.msg}, 状态码: ${data.code}`,
+              type: "info",
+            });
+          }
+        })
+        .catch((err) => {
+          this.$message({
+            message: "发生错误, 请到控制面板查看",
+            type: "error",
+          });
+          console.group("PlayListContainer created");
+          console.log(err);
+          console.groupEnd("PlayListContainer created");
+        });
+    },
   },
   computed: {
-    ...mapGetters(['getUserInfo']),
+    ...mapGetters(["getUserInfo"]),
     dynamicHeight() {
       let start = 0;
       let end = 200;
@@ -170,12 +210,12 @@ export default {
       let result = rate * this.bannerHeight;
       if (result <= 0) {
         return {
-          height: 0 + 'px',
-        }
+          height: 0 + "px",
+        };
       }
       return {
-        height: result + 'px',
-      }
+        height: result + "px",
+      };
     },
     totalLen() {
       return this.songDetails ? this.songDetails.length : 0;
@@ -188,10 +228,9 @@ export default {
   },
   beforeDestroy() {
     // window.removeEventListener('scroll', this.setOffsetY);
-  }
+  },
   // ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
-
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -205,7 +244,7 @@ export default {
   background-position: center top;
   position: relative;
   overflow: hidden;
-  transition: height .2s;
+  transition: height 0.2s;
 
   .avatar {
     content: url("../image/avatar-fallback.jpg");
@@ -240,7 +279,7 @@ export default {
         color: white;
 
         & > strong {
-          transition: .5s;
+          transition: 0.5s;
           font-size: 1.3em;
         }
 
@@ -255,5 +294,8 @@ export default {
     }
   }
 }
-
+.scream {
+  display: flex;
+  justify-content: center;
+}
 </style>
