@@ -27,7 +27,7 @@ export default {
   },
   methods: {
     goToPlayList(id) {
-      this.$emit("goToPlayList", id);
+      this.$emit("goToPlayList", id, "UserFavoritePlayList");
     },
   },
   computed: {
