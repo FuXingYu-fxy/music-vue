@@ -34,10 +34,12 @@
           title="上一首"
       />
 
+      <!--播放按钮-->
       <v-icon
-          name="regular/play-circle"
+          :name="playBtn.name"
           :scale="controlCenterSize"
-          title="播放"
+          :title="playBtn.title"
+          @click="toggle"
       />
 
       <v-icon
@@ -74,22 +76,41 @@ export default {
   data() {
     return {
       controlCenterSize: 2,
+      /**
+       * 属性:
+       *    paused: 当前媒体是否暂停 => boolean
+       *    src: 媒体来源 => url
+       *    muted: 是否静音 => boolean
+       *    loop: 是否循环播放 => boolean
+       *    duration: 只读 => 音频在时间轴中的持续时间（总长度）
+       *    currentTime: 当前媒体播放的位置，可通过修改该属性跳到音轨上的任意位置
+       *
+       * 事件:
+       *    play: paused 属性改变时会触发该事件, 也可以由同名方法触发 => 是异步的
+       *    pause: paused 属性改变时会触发该事件, 也可以由同名方法触发 => 是异步的
+       *    timeupdate: 歌曲播放时会一直触发该事件, 可通过handler参数获得当前音乐的播放位置
+       *    volumechange: 音量变化
+       *    ended: 播放结束
+       */
       audio: null,
     }
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
-  mounted() {
+  created() {
     // 创建 audio
     this.audio = new Audio();
-    this.audio.addEventListener('canplay', () => {
-      // 当终端可以播放媒体文件时触发该canplay事件，估计加载足够的数据来播放媒体直到其结束，而不必停止以进一步缓冲内容。
-      this.audio.play();
-    })
+    this.audio.addEventListener('canplay', this.play);
+    // 至于 为什么这个监听器不会丢失 this, 猜测是vue 内部对所有 methods 的函数都做了 bind 处理
+    // this.audio.addEventListener('canplay', function() {
+    //   console.log(this);
+    // }.bind(this));
   },
   beforeDestroy() {
-    this.audio = null;
   },
   // ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
+  components: {
+    'v-icon': Icon,
+  },
   computed: {
     ...mapGetters(['currentPlaySong']),
     musicInfo() {
@@ -109,11 +130,37 @@ export default {
         duration: currentPlaySongs.durationTime,
       }
     },
+    playBtn() {
+      // 如果是暂停状态，就要显示播放按钮，这里是反着来的
+      const name = this.audio.paused ? 'regular/play-circle' : 'regular/pause-circle';
+      const title = this.audio.paused ? '播放' : '暂停';
+      console.log(this.audio.paused);
+      return {
+        name,
+        title
+      }
+    },
   },
-  components: {
-    'v-icon': Icon,
-  },
+
   methods: {
+    toggle() {
+      // 当终端可以播放媒体文件时触发该canplay事件，估计加载足够的数据来播放媒体直到其结束，而不必停止以进一步缓冲内容。
+      if (this.audio.paused) {
+        // 如果当前 是暂停状态, 就要播放音乐
+        this.play();
+      } else {
+        // 否则就暂停音乐
+        this.pause();
+      }
+    },
+    play() {
+      this.audio.play();
+      console.log(this.audio.paused);
+    },
+    pause() {
+      this.audio.pause();
+      console.log(this.audio.paused);
+    },
     next() {
       console.log('播放下一首');
     },
@@ -130,14 +177,14 @@ export default {
             id,
           }
         });
-
         if (data.success) {
           // 再次请求
           let {data: result} = await request.get('/song/url', {
             params: {
               id,
             }
-          })
+          });
+
           if (result.code === 200) {
             this.audio.src = result.data[0].url;
           } else {
@@ -146,26 +193,27 @@ export default {
               type: 'info'
             })
           }
-          console.log(result);
-          // this.audio.src = result;
         } else {
           this.$message({
             message: `${data.message}`,
             type: 'info'
           })
+
         }
       } catch (err) {
+        const data = err.response.data;
         this.$message({
-          message: '发生错误, 请到控制面板查看',
+          message: `${data.message}`,
           type: 'error'
         })
+
         console.group('watch currentPlaySong');
         console.log(err);
         console.groupEnd('watch currentPlaySong');
       }
 
 
-    }
+    },
   },
 
 }

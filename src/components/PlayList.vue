@@ -108,7 +108,6 @@ export default {
     },
     ids: {
       handler(newIds) {
-        console.log(newIds);
         if (!newIds) return;
         const ids = newIds.map(item => item.id);
         // POST请求url必须添加时间戳,使每次请求url不一样,不然请求会被缓存
