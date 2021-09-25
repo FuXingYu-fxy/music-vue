@@ -93,6 +93,7 @@ export default {
        *    ended: 播放结束
        */
       audio: null,
+      paused: true,
     }
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
@@ -132,9 +133,8 @@ export default {
     },
     playBtn() {
       // 如果是暂停状态，就要显示播放按钮，这里是反着来的
-      const name = this.audio.paused ? 'regular/play-circle' : 'regular/pause-circle';
-      const title = this.audio.paused ? '播放' : '暂停';
-      console.log(this.audio.paused);
+      const name = this.paused ? 'regular/play-circle' : 'regular/pause-circle';
+      const title = this.paused ? '播放' : '暂停';
       return {
         name,
         title
@@ -155,11 +155,11 @@ export default {
     },
     play() {
       this.audio.play();
-      console.log(this.audio.paused);
+      this.paused = false;
     },
     pause() {
       this.audio.pause();
-      console.log(this.audio.paused);
+      this.paused = true;
     },
     next() {
       console.log('播放下一首');
