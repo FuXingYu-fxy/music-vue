@@ -106,38 +106,39 @@ export default {
       },
       immediate: true,
     },
-  },
-  ids: {
-    handler(newIds) {
-      if (!newIds) return;
-      const ids = newIds.map(item => item.id);
-      // POST请求url必须添加时间戳,使每次请求url不一样,不然请求会被缓存
-      request.get('/song/detail', {
-        params: {
-          ids: ids.slice(0, 20).join(','),
-          timestamp: Date.now(),
-        }
-      }).then(({data}) => {
-        if (data.code === 200) {
-          this.playList = data.songs.map(parseSongInfo);
-        } else {
+    ids: {
+      handler(newIds) {
+        console.log(newIds);
+        if (!newIds) return;
+        const ids = newIds.map(item => item.id);
+        // POST请求url必须添加时间戳,使每次请求url不一样,不然请求会被缓存
+        request.get('/song/detail', {
+          params: {
+            ids: ids.slice(0, 20).join(','),
+            timestamp: Date.now(),
+          }
+        }).then(({data}) => {
+          if (data.code === 200) {
+            this.playList = data.songs.map(parseSongInfo);
+          } else {
+            this.$message({
+              message: `${data.msg}, 状态码: ${data.code}`,
+              type: 'info'
+            })
+          }
+        }).catch(err => {
           this.$message({
-            message: `${data.msg}, 状态码: ${data.code}`,
-            type: 'info'
+            message: '发生错误, 请到控制面板查看',
+            type: 'error'
           })
-        }
-      }).catch(err => {
-        this.$message({
-          message: '发生错误, 请到控制面板查看',
-          type: 'error'
+          console.group('PlayList loadRest');
+          console.log(err);
+          console.groupEnd('PlayList loadRest');
         })
-        console.group('PlayList loadRest');
-        console.log(err);
-        console.groupEnd('PlayList loadRest');
-      })
-    },
-    immediate: true,
-  }
+      },
+      immediate: true,
+    }
+  },
 }
 </script>
 
