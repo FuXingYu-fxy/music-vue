@@ -16,16 +16,19 @@
     <router-view></router-view>
     <router-view name="first"/>
     <router-view name="home"/>
+    <playBar/>
   </div>
 </template>
 
 <script>
 import Search from '@/components/Search';
+import PlayBar from '@/components/PlayBar';
 
 export default {
   name: 'app',
   components: {
     Search,
+    PlayBar,
   },
   data() {
     return {
