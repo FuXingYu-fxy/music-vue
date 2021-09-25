@@ -2,9 +2,9 @@
   <div class="music-controls">
 
     <div class="music-cover">
-      <img src="../image/avatar-fallback.jpg" alt="专辑封面"/>
+      <img :src="musicInfo.coverImgUrl" alt="专辑封面"/>
       <div class="music-info">
-        <span>世界那么大还是遇见你/程程</span>
+        <span>{{ musicInfo.name }}/{{ musicInfo.artists }}</span>
         <div class="button-list">
           <v-icon
               name="regular/heart"
@@ -49,7 +49,7 @@
     </div>
 
     <div class="rest-container">
-      <span>04:15/04:55</span>
+      <span>04:15/{{ musicInfo.duration }}</span>
       <span>词</span>
       <div class="list">
         <v-icon
@@ -65,13 +65,50 @@
 <script>
 import Icon from "vue-awesome/components/Icon";
 import "vue-awesome/icons";
+import {mapGetters} from 'vuex';
+import defaultCover from '../image/defaultCover.jpg';
+import request from '@/request/request';
 
 export default {
   name: 'PlayBar',
   data() {
     return {
       controlCenterSize: 2,
+      audio: null,
     }
+  },
+  // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
+  mounted() {
+    // 创建 audio
+    this.audio = new Audio();
+    this.audio.addEventListener('canplay', () => {
+      // 当终端可以播放媒体文件时触发该canplay事件，估计加载足够的数据来播放媒体直到其结束，而不必停止以进一步缓冲内容。
+      this.audio.play();
+    })
+  },
+  beforeDestroy() {
+    this.audio = null;
+  },
+  // ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
+  computed: {
+    ...mapGetters(['currentPlaySong']),
+    musicInfo() {
+      const currentPlaySongs = this.currentPlaySong;
+      if (!currentPlaySongs) {
+        return {
+          coverImgUrl: defaultCover,
+          artists: 'xx',
+          name: 'xxxxxxxxxxxx',
+          duration: '03:21',
+        }
+      }
+      return {
+        coverImgUrl: currentPlaySongs.cover,
+        artists: currentPlaySongs.artists,
+        name: currentPlaySongs.songTitle,
+        duration: currentPlaySongs.durationTime,
+      }
+    },
   },
   components: {
     'v-icon': Icon,
@@ -83,7 +120,53 @@ export default {
     prev() {
       console.log('播放上一首');
     }
-  }
+  },
+  watch: {
+    async currentPlaySong(musicInfo) {
+      const id = musicInfo.id;
+      try {
+        let {data} = await request.get('/check/music', {
+          params: {
+            id,
+          }
+        });
+
+        if (data.success) {
+          // 再次请求
+          let {data: result} = await request.get('/song/url', {
+            params: {
+              id,
+            }
+          })
+          if (result.code === 200) {
+            this.audio.src = result.data[0].url;
+          } else {
+            this.$message({
+              message: `${result.msg}, 状态码: ${result.code}`,
+              type: 'info'
+            })
+          }
+          console.log(result);
+          // this.audio.src = result;
+        } else {
+          this.$message({
+            message: `${data.message}`,
+            type: 'info'
+          })
+        }
+      } catch (err) {
+        this.$message({
+          message: '发生错误, 请到控制面板查看',
+          type: 'error'
+        })
+        console.group('watch currentPlaySong');
+        console.log(err);
+        console.groupEnd('watch currentPlaySong');
+      }
+
+
+    }
+  },
 
 }
 </script>

@@ -16,13 +16,13 @@ export default new Vuex.Store({
     currentPlaySong: null,
   },
   getters: {
-    getDailyPlayList(state) {
+    dailyPlayList(state) {
       return state.dailyPlayList;
     },
-    getUserInfo(state) {
+    userInfo(state) {
       return state.userInfo;
     },
-    getCurrentPlaySong(state) {
+    currentPlaySong(state) {
       return state.currentPlaySong;
     }
   },

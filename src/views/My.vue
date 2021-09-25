@@ -207,7 +207,7 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(["getUserInfo"]),
+    ...mapGetters(["userInfo"]),
     totalLen() {
       return this.songDetails ? this.songDetails.length : 0;
     },

@@ -17,7 +17,7 @@ export default {
   name: "RecommendList.vue",
   computed: {
     ...mapGetters({
-      dailyPlayList: 'getDailyPlayList'
+      dailyPlayList: 'dailyPlayList'
     }),
   },
   methods: {

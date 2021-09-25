@@ -31,7 +31,7 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(['getUserInfo']),
+    ...mapGetters(['userInfo']),
   },
   created() {
     // TODO 这个uid 后期用getUserInfo 从 store 中获取
