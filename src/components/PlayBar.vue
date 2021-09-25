@@ -2,7 +2,7 @@
   <div class="music-controls">
 
     <div class="music-cover">
-      <img :src="musicInfo.coverImgUrl" alt="专辑封面"/>
+      <img :class="['cover-spin', switchBtn]" :src="musicInfo.coverImgUrl"  alt="专辑封面"/>
       <div class="music-info">
         <span>{{ musicInfo.name }}/{{ musicInfo.artists }}</span>
         <div class="button-list">
@@ -140,6 +140,9 @@ export default {
         title
       }
     },
+    switchBtn() {
+      return this.paused ? 'cover-paused': 'cover-running';
+    },
   },
 
   methods: {
@@ -154,12 +157,16 @@ export default {
       }
     },
     play() {
-      this.audio.play();
-      this.paused = false;
+      if (this.audio) {
+        this.audio.play();
+        this.paused = false;
+      }
     },
     pause() {
-      this.audio.pause();
-      this.paused = true;
+      if (!this.audio) {
+        this.audio.pause();
+        this.paused = true;
+      }
     },
     next() {
       console.log('播放下一首');
@@ -186,6 +193,7 @@ export default {
           });
 
           if (result.code === 200) {
+            // 添加 url, 开始播放
             this.audio.src = result.data[0].url;
           } else {
             this.$message({
@@ -308,5 +316,22 @@ $music-controls-height: 60px;
     color: teal;
   }
 
+}
+
+.cover-spin {
+  animation: spin 20s infinite linear;
+}
+
+.cover-paused {
+  animation-play-state: paused;
+}
+.cover-running {
+  animation-play-state: running;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(1turn);
+  }
 }
 </style>
