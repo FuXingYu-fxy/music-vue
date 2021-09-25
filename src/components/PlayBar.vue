@@ -253,8 +253,8 @@ $music-controls-height: 60px;
     right: 0;
     bottom: 0;
     left: 0;
-    background-color: #f0f8ffc9;
-    backdrop-filter: blur(5px);
+    background-color: transparent;
+    backdrop-filter: blur(3px);
   }
 }
 
