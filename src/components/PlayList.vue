@@ -23,7 +23,6 @@
     </div>
     <el-divider/>
     <el-table
-        @cell-click="play"
         :data="playList"
         style="width: 100%">
       <el-table-column
@@ -34,6 +33,7 @@
           label="歌曲标题">
         <template v-slot="{row}">
           <el-link
+              @click="play(row)"
               icon="el-icon-video-play"
               :underline="false"
           >
@@ -95,49 +95,48 @@ export default {
       updateCurrentPlay: UPDATE_CURRENT_PLAY,
     }),
     play(songInfo) {
-      // const {album, artists, cover, durationTime, id, songTitle} = songInfo;
-      // const currentPlaySong = {album, artists, cover, durationTime, id, songTitle};
-      // 保存当前播放的音乐信息至 store
       this.updateCurrentPlay(songInfo);
     },
   },
   watch: {
-    ids: {
-      handler(newIds) {
-        if (this.songDetails) {
-          // 如果用在每日推荐歌曲, 每日推荐歌曲的接口会直接返回音乐数据，不用再根据id请求
-          this.playList = this.songDetails;
-          return;
-        }
-        if (!newIds) return;
-        const ids = newIds.map(item => item.id);
-        // POST请求url必须添加时间戳,使每次请求url不一样,不然请求会被缓存
-        request.get('/song/detail', {
-          params: {
-            ids: ids.slice(0, 20).join(','),
-            timestamp: Date.now(),
-          }
-        }).then(({data}) => {
-          if (data.code === 200) {
-            this.playList = data.songs.map(parseSongInfo);
-          } else {
-            this.$message({
-              message: `${data.msg}, 状态码: ${data.code}`,
-              type: 'info'
-            })
-          }
-        }).catch(err => {
-          this.$message({
-            message: '发生错误, 请到控制面板查看',
-            type: 'error'
-          })
-          console.group('PlayList loadRest');
-          console.log(err);
-          console.groupEnd('PlayList loadRest');
-        })
+    songDetails: {
+      handler(newSongs) {
+        // 如果用在每日推荐歌曲, 每日推荐歌曲的接口会直接返回音乐数据，不用再根据id请求
+        this.playList = newSongs;
       },
       immediate: true,
-    }
+    },
+  },
+  ids: {
+    handler(newIds) {
+      if (!newIds) return;
+      const ids = newIds.map(item => item.id);
+      // POST请求url必须添加时间戳,使每次请求url不一样,不然请求会被缓存
+      request.get('/song/detail', {
+        params: {
+          ids: ids.slice(0, 20).join(','),
+          timestamp: Date.now(),
+        }
+      }).then(({data}) => {
+        if (data.code === 200) {
+          this.playList = data.songs.map(parseSongInfo);
+        } else {
+          this.$message({
+            message: `${data.msg}, 状态码: ${data.code}`,
+            type: 'info'
+          })
+        }
+      }).catch(err => {
+        this.$message({
+          message: '发生错误, 请到控制面板查看',
+          type: 'error'
+        })
+        console.group('PlayList loadRest');
+        console.log(err);
+        console.groupEnd('PlayList loadRest');
+      })
+    },
+    immediate: true,
   }
 }
 </script>
