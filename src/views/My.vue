@@ -156,9 +156,12 @@ export default {
       let start = 0;
       let end = 200;
       let rate = window.pageYOffset / (end - start);
+      if (rate >= 1) {
+        return ;
+      }
       let offset = rate * referenceHeight;
       recommend.style.transform = `translateY(-${offset}px)`;
-    }, 100),
+    }, 80),
     toggleScreamPlayListState() {
       this.showScreamPlayList = !this.showScreamPlayList;
     },
