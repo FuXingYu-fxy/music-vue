@@ -81,7 +81,7 @@ function parseSongInfo(item) {
   // tns 是歌曲别名数组 tns[0] 是名字, 注意!!! 只有个别歌有 tns 这个字段
   // ar 是作者数组， ar[0].name 是作者名
   // al 是专辑, 一个对象
-  const { name, ar, id, tns, dt, al } = item;
+  const { name, ar, id, tns, dt, al} = item;
   const songAlias = tns && tns.join('/');
   const artists = ar.length && ar.map(artist => artist.name).join('/');
   // 歌曲标题 时长 歌手  专辑
@@ -92,6 +92,7 @@ function parseSongInfo(item) {
     artists: artists,
     album: al.name,
     cover: al.picUrl,
+    dt: dt,
   }
 }
 

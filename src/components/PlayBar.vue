@@ -1,6 +1,9 @@
 <template>
   <div class="music-controls">
 
+    <div class="process">
+      <div class="process-bar" :style="currentPosition"></div>
+    </div>
     <div class="music-cover">
       <img :class="['cover-spin', switchBtn]" :src="musicInfo.coverImgUrl"  alt="专辑封面"/>
       <div class="music-info">
@@ -75,7 +78,6 @@ export default {
   name: 'PlayBar',
   data() {
     return {
-      controlCenterSize: 2,
       /**
        * 属性:
        *    paused: 当前媒体是否暂停 => boolean
@@ -92,8 +94,11 @@ export default {
        *    volumechange: 音量变化
        *    ended: 播放结束
        */
+      controlCenterSize: 2,
       audio: null,
       paused: true,
+      currentTime: 0,
+      duration: 0,
     }
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
@@ -102,6 +107,7 @@ export default {
     this.audio = new Audio();
     this.audio.addEventListener('canplay', this.play);
     this.audio.addEventListener('ended', this.pause);
+    this.audio.addEventListener('timeupdate', this.handleTimeupdate);
     // 至于 为什么这个监听器不会丢失 this, 猜测是vue 内部对所有 methods 的函数都做了 bind 处理
     // this.audio.addEventListener('canplay', function() {
     //   console.log(this);
@@ -111,6 +117,7 @@ export default {
     // 移除绑定的事件
     this.audio.removeListener('canplay', this.play);
     this.audio.removeListener('ended', this.pause);
+    this.audio.removeListener('timeupdate', this.handleTimeupdate);
   },
   // ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
   components: {
@@ -118,6 +125,12 @@ export default {
   },
   computed: {
     ...mapGetters(['currentPlaySong']),
+    currentPosition() {
+      let rate = (this.currentTime / (this.duration / 1000)) * 100;
+      return {
+        width: rate.toFixed(2) + '%',
+      }
+    },
     musicInfo() {
       const currentPlaySongs = this.currentPlaySong;
       if (!currentPlaySongs) {
@@ -133,6 +146,7 @@ export default {
         artists: currentPlaySongs.artists,
         name: currentPlaySongs.songTitle,
         duration: currentPlaySongs.durationTime,
+        dt: currentPlaySongs.dt,
       }
     },
     playBtn() {
@@ -177,10 +191,15 @@ export default {
     },
     prev() {
       console.log('播放上一首');
-    }
+    },
+    handleTimeupdate() {
+      this.currentTime = this.audio.currentTime;
+    },
   },
   watch: {
     async currentPlaySong(musicInfo) {
+      // 毫秒表示的时间
+      this.duration = musicInfo.dt;
       const id = musicInfo.id;
       try {
         let {data} = await request.get('/check/music', {
@@ -213,6 +232,8 @@ export default {
 
         }
       } catch (err) {
+
+        console.log(err.response);
         const data = err.response.data;
         this.$message({
           message: `${data.message}`,
@@ -245,7 +266,8 @@ $music-controls-height: 60px;
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 0 8px;
+  // 为进度条留出空隙
+  padding: 5px 8px 0 8px;
   z-index: 3;
 
   &::before {
@@ -262,6 +284,18 @@ $music-controls-height: 60px;
   }
 }
 
+.process {
+  position: absolute;
+  height: 4px;
+  width: 100%;
+  top: 0;
+  .process-bar {
+    position: absolute;
+    background-color: teal;
+    transition: .1s;
+    height: 100%;
+  }
+}
 .music-cover {
   display: flex;
   flex-direction: row;
