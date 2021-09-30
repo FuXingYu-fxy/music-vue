@@ -101,12 +101,16 @@ export default {
     // 创建 audio
     this.audio = new Audio();
     this.audio.addEventListener('canplay', this.play);
+    this.audio.addEventListener('ended', this.pause);
     // 至于 为什么这个监听器不会丢失 this, 猜测是vue 内部对所有 methods 的函数都做了 bind 处理
     // this.audio.addEventListener('canplay', function() {
     //   console.log(this);
     // }.bind(this));
   },
   beforeDestroy() {
+    // 移除绑定的事件
+    this.audio.removeListener('canplay', this.play);
+    this.audio.removeListener('ended', this.pause);
   },
   // ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
   components: {
@@ -157,16 +161,16 @@ export default {
       }
     },
     play() {
-      if (this.audio) {
+      if (this.audio.paused) {
         this.audio.play();
         this.paused = false;
       }
     },
     pause() {
-      if (!this.audio) {
+      if (!this.audio.paused) {
         this.audio.pause();
-        this.paused = true;
       }
+      this.paused = true;
     },
     next() {
       console.log('播放下一首');
