@@ -5,7 +5,7 @@
       <div class="process-bar" :style="currentPosition"></div>
     </div>
     <div class="music-cover">
-      <img :class="['cover-spin', switchBtn]" :src="musicInfo.coverImgUrl"  alt="专辑封面"/>
+      <img :class="['cover-spin', audio.paused ? 'cover-paused': 'cover-running']" :src="musicInfo.coverImgUrl"  alt="专辑封面"/>
       <div class="music-info">
         <span>{{ musicInfo.name }}/{{ musicInfo.artists }}</span>
         <div class="button-list">
@@ -39,9 +39,9 @@
 
       <!--播放按钮-->
       <v-icon
-          :name="playBtn.name"
+          :name="audio.paused ? 'regular/play-circle' : 'regular/pause-circle'"
           :scale="controlCenterSize"
-          :title="playBtn.title"
+          :title="audio.paused ? '播放' : '暂停'"
           @click="toggle"
       />
 
@@ -150,18 +150,7 @@ export default {
         dt: currentPlaySongs.dt,
       }
     },
-    playBtn() {
-      // 如果是暂停状态，就要显示播放按钮，这里是反着来的
-      const name = this.paused ? 'regular/play-circle' : 'regular/pause-circle';
-      const title = this.paused ? '播放' : '暂停';
-      return {
-        name,
-        title
-      }
-    },
-    switchBtn() {
-      return this.paused ? 'cover-paused': 'cover-running';
-    },
+    
     durationTime() {
       if (this.currentTime === 0) {
         return '00:00';
@@ -311,8 +300,8 @@ $music-controls-height: 60px;
   flex-direction: row;
 
   img {
-    width: $music-controls-height;
-    height: $music-controls-height;
+    width: $music-controls-height - 5;
+    height: $music-controls-height - 5;
     border-radius: 50%;
   }
 }
