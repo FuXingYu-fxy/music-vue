@@ -1,66 +1,61 @@
 <template>
   <div class="music-controls">
-
     <div class="process">
       <div class="process-bar" :style="currentPosition"></div>
     </div>
     <div class="music-cover">
-      <img :class="['cover-spin', audio.paused ? 'cover-paused': 'cover-running']" :src="musicInfo.coverImgUrl"  alt="专辑封面"/>
+      <img
+        :class="['cover-spin', audio.paused ? 'cover-paused' : 'cover-running']"
+        :src="musicInfo.coverImgUrl"
+        alt="专辑封面"
+      />
       <div class="music-info">
         <span>{{ musicInfo.name }}/{{ musicInfo.artists }}</span>
         <div class="button-list">
           <v-icon
-              name="regular/heart"
-              title="喜欢"
-              scale="1"
+            :name="likeThisMusic ? 'regular/heart' : 'heart'"
+            title="喜欢"
+            scale="1"
+            :style="{
+              color: likeThisMusic ? '' : 'teal',
+            }"
+            @click="like"
           />
 
-          <v-icon
-              name="download"
-              title="下载"
-          />
+          <v-icon name="download" title="下载" />
 
-          <v-icon
-              name="regular/comment-dots"
-              title="评论"
-          />
+          <v-icon name="regular/comment-dots" title="评论" />
         </div>
       </div>
     </div>
 
-
     <div class="control-center">
-
       <v-icon
-          name="angle-double-left"
-          :scale="controlCenterSize"
-          title="上一首"
+        name="angle-double-left"
+        :scale="controlCenterSize"
+        title="上一首"
       />
 
       <!--播放按钮-->
       <v-icon
-          :name="audio.paused ? 'regular/play-circle' : 'regular/pause-circle'"
-          :scale="controlCenterSize"
-          :title="audio.paused ? '播放' : '暂停'"
-          @click="toggle"
+        :name="audio.paused ? 'regular/play-circle' : 'regular/pause-circle'"
+        :scale="controlCenterSize"
+        :title="audio.paused ? '播放' : '暂停'"
+        @click="toggle"
       />
 
       <v-icon
-          :scale="controlCenterSize"
-          name="angle-double-right"
-          title="下一首"
+        :scale="controlCenterSize"
+        name="angle-double-right"
+        title="下一首"
       />
-
     </div>
 
     <div class="rest-container">
-      <span>{{durationTime}}/{{ musicInfo.duration }}</span>
+      <span>{{ durationTime }}/{{ musicInfo.duration }}</span>
       <span>词</span>
       <div class="list">
-        <v-icon
-            name="headphones-alt"
-            title="展开列表"
-        />
+        <v-icon name="headphones-alt" title="展开列表" />
         <span>3</span>
       </div>
     </div>
@@ -70,13 +65,14 @@
 <script>
 import Icon from "vue-awesome/components/Icon";
 import "vue-awesome/icons";
-import {mapGetters} from 'vuex';
-import defaultCover from '../image/defaultCover.jpg';
-import request from '@/request/request';
-import {formatDuration} from '@/utils/index.js';
+import { mapGetters } from "vuex";
+import defaultCover from "../image/defaultCover.jpg";
+import request from "@/request/request";
+import { formatDuration } from "@/utils/index.js";
+import { debounce } from "@/utils/index.js";
 
 export default {
-  name: 'PlayBar',
+  name: "PlayBar",
   data() {
     return {
       /**
@@ -100,15 +96,17 @@ export default {
       paused: true,
       currentTime: 0,
       duration: 0,
-    }
+      // 喜欢歌曲时, 要传入true
+      likeThisMusic: true,
+    };
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
   created() {
     // 创建 audio
     this.audio = new Audio();
-    this.audio.addEventListener('canplay', this.play);
-    this.audio.addEventListener('ended', this.pause);
-    this.audio.addEventListener('timeupdate', this.handleTimeupdate);
+    this.audio.addEventListener("canplay", this.play);
+    this.audio.addEventListener("ended", this.pause);
+    this.audio.addEventListener("timeupdate", this.handleTimeupdate);
     // 至于 为什么这个监听器不会丢失 this, 猜测是vue 内部对所有 methods 的函数都做了 bind 处理
     // this.audio.addEventListener('canplay', function() {
     //   console.log(this);
@@ -116,31 +114,31 @@ export default {
   },
   beforeDestroy() {
     // 移除绑定的事件
-    this.audio.removeListener('canplay', this.play);
-    this.audio.removeListener('ended', this.pause);
-    this.audio.removeListener('timeupdate', this.handleTimeupdate);
+    this.audio.removeListener("canplay", this.play);
+    this.audio.removeListener("ended", this.pause);
+    this.audio.removeListener("timeupdate", this.handleTimeupdate);
   },
   // ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
   components: {
-    'v-icon': Icon,
+    "v-icon": Icon,
   },
   computed: {
-    ...mapGetters(['currentPlaySong']),
+    ...mapGetters(["currentPlaySong"]),
     currentPosition() {
       let rate = (this.currentTime / (this.duration / 1000)) * 100;
       return {
-        width: rate.toFixed(2) + '%',
-      }
+        width: rate.toFixed(2) + "%",
+      };
     },
     musicInfo() {
       const currentPlaySongs = this.currentPlaySong;
       if (!currentPlaySongs) {
         return {
           coverImgUrl: defaultCover,
-          artists: 'xx',
-          name: 'xxxxxxxxxxxx',
-          duration: '03:21',
-        }
+          artists: "xx",
+          name: "xxxxxxxxxxxx",
+          duration: "03:21",
+        };
       }
       return {
         coverImgUrl: currentPlaySongs.cover,
@@ -148,16 +146,16 @@ export default {
         name: currentPlaySongs.songTitle,
         duration: currentPlaySongs.durationTime,
         dt: currentPlaySongs.dt,
-      }
+      };
     },
-    
+
     durationTime() {
       if (this.currentTime === 0) {
-        return '00:00';
+        return "00:00";
       } else {
         return formatDuration(this.currentTime * 1000);
       }
-    }
+    },
   },
 
   methods: {
@@ -184,32 +182,49 @@ export default {
       this.paused = true;
     },
     next() {
-      console.log('播放下一首');
+      console.log("播放下一首");
     },
     prev() {
-      console.log('播放上一首');
+      console.log("播放上一首");
     },
     handleTimeupdate() {
       this.currentTime = this.audio.currentTime;
     },
+    debouncedFn: debounce(function (url, id, currentState) {
+      request.get(url, {
+        params: {
+          id: id,
+          // 状态已经发生改变, 发送请求的是上一次的状态
+          like: !currentState,
+        },
+      });
+    }, 2000),
+    like() {
+      if (this.currentTime === 0) {
+        return;
+      }
+      this.likeThisMusic = !this.likeThisMusic;
+      this.debouncedFn("/like", this.currentPlaySong.id, this.likeThisMusic);
+    },
   },
   watch: {
     async currentPlaySong(musicInfo) {
+      this.likeThisMusic = true;
       // 毫秒表示的时间
       this.duration = musicInfo.dt;
       const id = musicInfo.id;
       try {
-        let {data} = await request.get('/check/music', {
+        let { data } = await request.get("/check/music", {
           params: {
             id,
-          }
+          },
         });
         if (data.success) {
           // 再次请求
-          let {data: result} = await request.get('/song/url', {
+          let { data: result } = await request.get("/song/url", {
             params: {
               id,
-            }
+            },
           });
 
           if (result.code === 200) {
@@ -218,35 +233,30 @@ export default {
           } else {
             this.$message({
               message: `${result.msg}, 状态码: ${result.code}`,
-              type: 'info'
-            })
+              type: "info",
+            });
           }
         } else {
           this.$message({
             message: `${data.message}`,
-            type: 'info'
-          })
-
+            type: "info",
+          });
         }
       } catch (err) {
-
         console.log(err.response);
         const data = err.response.data;
         this.$message({
           message: `${data.message}`,
-          type: 'error'
-        })
+          type: "error",
+        });
 
-        console.group('watch currentPlaySong');
+        console.group("watch currentPlaySong");
         console.log(err);
-        console.groupEnd('watch currentPlaySong');
+        console.groupEnd("watch currentPlaySong");
       }
-
-
     },
   },
-
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -291,7 +301,6 @@ $music-controls-height: 60px;
   .process-bar {
     position: absolute;
     background-color: teal;
-    transition: .1s;
     height: 100%;
   }
 }
@@ -343,7 +352,7 @@ $music-controls-height: 60px;
   flex-direction: row;
   justify-content: flex-end;
   align-items: flex-end;
-  transition: .5s;
+  transition: 0.5s;
 
   & > * {
     margin: 0 10px;
@@ -353,7 +362,6 @@ $music-controls-height: 60px;
   & > *:not(:first-child):hover {
     color: teal;
   }
-
 }
 
 .cover-spin {

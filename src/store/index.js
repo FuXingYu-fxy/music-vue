@@ -2,8 +2,8 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import {
   UPDATE_USER_INFO,
-  UPDATE_DAILY_PLAYLIST,
   UPDATE_CURRENT_PLAY,
+  UPDATE_CURRENT_PLAY_LIST,
 } from '@/store/actionType';
 
 Vue.use(Vuex)
@@ -12,18 +12,24 @@ export default new Vuex.Store({
   state: {
     // 后期将这些全部存入 localStorage 避免重复请求
     userInfo: null,
-    dailyPlayList: null,
+    
+    // 当前播放的音乐
     currentPlaySong: null,
+    
+    // 当前的音乐列表
+    currentPlayList: null,
   },
   getters: {
-    dailyPlayList(state) {
-      return state.dailyPlayList;
-    },
     userInfo(state) {
       return state.userInfo;
     },
+    
     currentPlaySong(state) {
       return state.currentPlaySong;
+    },
+    
+    currentPlayList(state) {
+      return state.currentPlayList;
     }
   },
   mutations: {
@@ -32,9 +38,11 @@ export default new Vuex.Store({
       state.userInfo = payload;
     },
     
-    // 更新每日推荐歌单
-    [UPDATE_DAILY_PLAYLIST](state, payload) {
-      state.dailyPlayList = payload;
+    [UPDATE_CURRENT_PLAY_LIST](state, payload) {
+      if (state.currentPlayList === payload) {
+        return;
+      }
+      state.currentPlayList = payload;
     },
     
     // 更新当前播放歌曲的信息

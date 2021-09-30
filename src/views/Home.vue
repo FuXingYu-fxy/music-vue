@@ -13,15 +13,13 @@
       <el-link type="primary" :underline="false" @click="toTop"
         >推荐歌单</el-link
       >
-      <RecommendList />
+      <RecommendList :daily-play-list="dailyPlayList"/>
     </div>
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import { mapMutations } from "vuex";
-import { UPDATE_DAILY_PLAYLIST } from "@/store/actionType";
 import request from "@/request/request";
 import RecommendList from "@/components/RecommendList";
 import {getNextTime} from '@/utils/index.js';
@@ -32,12 +30,10 @@ export default {
   data() {
     return {
       isLoading: false,
+      dailyPlayList: null,
     };
   },
   methods: {
-    ...mapMutations({
-      updateDailyPlayList: UPDATE_DAILY_PLAYLIST,
-    }),
     toTop() {
       this.$refs.div.scrollIntoView();
     },
@@ -53,7 +49,7 @@ export default {
       resource.curId === curId &&
       curTimestamp < resource.timestamp
     ) {
-      this.updateDailyPlayList(resource.dailyPlayList);
+      this.dailyPlayList = resource.dailyPlayList;
       return;
     }
 
@@ -74,7 +70,7 @@ export default {
               picUrl: item.picUrl,
             };
           });
-          this.updateDailyPlayList(dailyPlayList);
+          this.dailyPlayList = dailyPlayList;
 
           resource = {
             dailyPlayList,

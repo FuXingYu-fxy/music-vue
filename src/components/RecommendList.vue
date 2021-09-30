@@ -11,14 +11,14 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex';
 
 export default {
   name: "RecommendList.vue",
-  computed: {
-    ...mapGetters({
-      dailyPlayList: 'dailyPlayList'
-    }),
+  props: {
+    dailyPlayList: {
+      type: Array,
+      required: true,
+    }
   },
   methods: {
     goToPlayList(id) {
