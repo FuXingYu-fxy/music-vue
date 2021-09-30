@@ -90,6 +90,7 @@ import Calendar from "@/components/Calendar";
 import UserFavoritePlayList from "@/components/UserFavoritePlayList";
 import PersonalFM from "@/components/PersonalFM";
 import HotPlayList from "../components/HotPlayList.vue";
+import {getNextTime} from '@/utils/index.js';
 
 const eventType = {
   HOTPLAYLIST: "HotPlayList",
@@ -113,7 +114,6 @@ export default {
     return {
       activeName: "first",
       songDetails: null,
-      isInitialData: true,
       ids: null,
       // 我的收藏歌单的组件列表
       showUserFavoritePlayList: true,
@@ -124,6 +124,18 @@ export default {
     };
   },
   created() {
+    let resource = localStorage.getItem("recommendSongs");
+    let curId = localStorage.getItem("curId");
+    let curTimestamp = Date.now();
+    resource = resource && JSON.parse(resource);
+    if (
+      resource &&
+      resource.curId === curId &&
+      curTimestamp < resource.timestamp
+    ) {
+      this.songDetails = resource.songDetails;
+      return;
+    }
     // 每日推荐歌曲的接口
     request
       .post("/recommend/songs")
@@ -131,7 +143,13 @@ export default {
         if (data.code === 200) {
           // 注意这个接口返回的数据有两层data
           this.songDetails = data.data.dailySongs.map(parseSongInfo);
-          this.isInitialData = false;
+
+          resource = {
+            songDetails: this.songDetails,
+            curId,
+            timestamp: getNextTime(new Date()),
+          };
+          localStorage.setItem('recommendSongs', JSON.stringify(resource));
         } else {
           this.$message({
             message: `${data.msg}, 状态码: ${data.code}`,
@@ -157,7 +175,7 @@ export default {
       let end = 200;
       let rate = window.pageYOffset / (end - start);
       if (rate >= 1) {
-        return ;
+        return;
       }
       let offset = rate * referenceHeight;
       recommend.style.transform = `translateY(-${offset}px)`;
@@ -225,7 +243,7 @@ export default {
 
 <style lang="scss" scoped>
 .recommend {
-  transition: .5s;
+  transition: 0.5s;
   background: white;
 }
 .banner {

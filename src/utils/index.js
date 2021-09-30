@@ -95,9 +95,21 @@ function parseSongInfo(item) {
   }
 }
 
+/**
+ * 
+ * @param {Date} date
+ * @returns {number} 将来某个时间的时间戳
+ */
+function getNextTime(date, hour = 6, min = 0, sec = 0, ms = 0) {
+  // 将时间设置为明天 6:00
+  date.setDate(date.getDate() + 1); 
+  return date.setHours(hour, min, sec, ms);
+}
+
 export {
   formatDuration,
   debounce,
   throttle,
   parseSongInfo,
+  getNextTime,
 }

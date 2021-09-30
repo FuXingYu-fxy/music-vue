@@ -63,6 +63,8 @@ export default {
           const profile = {avatarUrl, nickname, gender, followeds, follows};
           // 将用户信息保存到 store 中
           this.updateUserInfo({account, profile, token});
+          // 将当前用户的id保存到localStorage
+          localStorage.setItem('curId', id);
           // 跳转路由
           this.$router.push({
             name: 'Home',
