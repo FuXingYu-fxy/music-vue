@@ -31,9 +31,9 @@
       </el-table-column>
       <el-table-column
           label="歌曲标题">
-        <template v-slot="{row}">
+        <template v-slot="{row, $index}">
           <el-link
-              @click="play(row)"
+              @click="play(row, $index)"
               icon="el-icon-video-play"
               :underline="false"
           >
@@ -63,7 +63,7 @@
 import request from '@/request/request';
 import {parseSongInfo} from '@/utils';
 import {mapMutations} from 'vuex';
-import {UPDATE_CURRENT_PLAY} from '@/store/actionType';
+import {UPDATE_CURRENT_PLAY, UPDATE_CURRENT_PLAY_LIST} from '@/store/actionType';
 
 export default {
   name: "PlayList",
@@ -93,14 +93,20 @@ export default {
   methods: {
     ...mapMutations({
       updateCurrentPlay: UPDATE_CURRENT_PLAY,
+      updateCurrentPlayList: UPDATE_CURRENT_PLAY_LIST,
     }),
-    play(songInfo) {
+    play(songInfo, index) {
+      // index 未添加响应式
+      songInfo.index = index;
       this.updateCurrentPlay(songInfo);
+      // 将播放列表保存到 store
+      this.updateCurrentPlayList(this.playList);
     },
   },
   watch: {
     songDetails: {
       handler(newSongs) {
+        if (!newSongs) return;
         // 如果用在每日推荐歌曲, 每日推荐歌曲的接口会直接返回音乐数据，不用再根据id请求
         this.playList = newSongs;
       },

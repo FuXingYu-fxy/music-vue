@@ -34,6 +34,7 @@
         name="angle-double-left"
         :scale="controlCenterSize"
         title="上一首"
+        @click="prev"
       />
 
       <!--播放按钮-->
@@ -48,6 +49,7 @@
         :scale="controlCenterSize"
         name="angle-double-right"
         title="下一首"
+        @click="next"
       />
     </div>
 
@@ -65,7 +67,8 @@
 <script>
 import Icon from "vue-awesome/components/Icon";
 import "vue-awesome/icons";
-import { mapGetters } from "vuex";
+import { mapGetters, mapMutations, } from "vuex";
+import {UPDATE_CURRENT_PLAY} from '@/store/actionType.js';
 import defaultCover from "../image/defaultCover.jpg";
 import request from "@/request/request";
 import { formatDuration } from "@/utils/index.js";
@@ -93,11 +96,11 @@ export default {
        */
       controlCenterSize: 2,
       audio: null,
-      paused: true,
       currentTime: 0,
       duration: 0,
       // 喜欢歌曲时, 要传入true
       likeThisMusic: true,
+      currentIndex: 0,
     };
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
@@ -105,7 +108,7 @@ export default {
     // 创建 audio
     this.audio = new Audio();
     this.audio.addEventListener("canplay", this.play);
-    this.audio.addEventListener("ended", this.pause);
+    this.audio.addEventListener("ended", this.next);
     this.audio.addEventListener("timeupdate", this.handleTimeupdate);
     // 至于 为什么这个监听器不会丢失 this, 猜测是vue 内部对所有 methods 的函数都做了 bind 处理
     // this.audio.addEventListener('canplay', function() {
@@ -115,7 +118,8 @@ export default {
   beforeDestroy() {
     // 移除绑定的事件
     this.audio.removeListener("canplay", this.play);
-    this.audio.removeListener("ended", this.pause);
+    // 播放结束后自动播放下一首
+    this.audio.removeListener("ended", this.next);
     this.audio.removeListener("timeupdate", this.handleTimeupdate);
   },
   // ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
@@ -123,7 +127,7 @@ export default {
     "v-icon": Icon,
   },
   computed: {
-    ...mapGetters(["currentPlaySong"]),
+    ...mapGetters(["currentPlaySong", "currentPlayList"]),
     currentPosition() {
       let rate = (this.currentTime / (this.duration / 1000)) * 100;
       return {
@@ -159,6 +163,9 @@ export default {
   },
 
   methods: {
+    ...mapMutations({
+      updateCurrentPlay: UPDATE_CURRENT_PLAY,
+    }),
     toggle() {
       // 当终端可以播放媒体文件时触发该canplay事件，估计加载足够的数据来播放媒体直到其结束，而不必停止以进一步缓冲内容。
       if (this.audio.paused) {
@@ -172,20 +179,28 @@ export default {
     play() {
       if (this.audio.paused) {
         this.audio.play();
-        this.paused = false;
       }
     },
     pause() {
       if (!this.audio.paused) {
         this.audio.pause();
       }
-      this.paused = true;
     },
     next() {
+      let index = (this.currentIndex + 1) % this.currentPlayList.length;
+      this.updateCurrentPlayListByIndex(index);
       console.log("播放下一首");
     },
     prev() {
+      let index = this.currentIndex - 1 ;
+      index = index < 0 ? this.currentPlayList.length - 1 : index;
+      this.updateCurrentPlayListByIndex(index);
       console.log("播放上一首");
+    },
+    updateCurrentPlayListByIndex(index) {
+      let currentPlayInfo = this.currentPlayList[index];
+      currentPlayInfo.index = index;
+      this.updateCurrentPlay(currentPlayInfo);
     },
     handleTimeupdate() {
       this.currentTime = this.audio.currentTime;
@@ -209,6 +224,7 @@ export default {
   },
   watch: {
     async currentPlaySong(musicInfo) {
+      this.currentIndex = musicInfo.index;
       this.likeThisMusic = true;
       // 毫秒表示的时间
       this.duration = musicInfo.dt;
