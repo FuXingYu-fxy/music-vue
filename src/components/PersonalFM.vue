@@ -58,9 +58,6 @@
       </div>
     </div>
     <FMCard />
-    <div class="daihuishanchu">
-      <el-button @click="getTestAPI">获取信息</el-button>
-    </div>
   </div>
 </template>
 
@@ -120,11 +117,6 @@ export default {
           },
         })
     }, 2000),
-    getTestAPI() {
-      request("/toplist/detail").then(({ data }) => {
-        console.log(data);
-      });
-    },
     like() {
       if (!this.PriFM) {
         return;

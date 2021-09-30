@@ -1,18 +1,19 @@
 <template>
-  <div class="container">
+  <span v-if="!info">加载中。。。</span>
+  <div v-else class="container">
     <div class="cover-mask">
       <div class="cover-slide">
         <div class="cover" v-for="item of coverList" :key="item.id" @click="handleClick(item.id)">
           <h3 class="music-name">{{ item.name }}</h3>
           <div>
-            <img :src="item.coverImgUrl" alt="" />
+            <img :src="item.coverImgUrl" alt=""/>
           </div>
         </div>
         <!-- 重复一次第一个可以实现无限的轮播 -->
         <div class="cover" @click="handleClick(coverList[0].id)" data-id="哈哈">
-          <h3 class="music-name" >{{ coverList[0].name }}</h3>
+          <h3 class="music-name">{{ coverList[0].name }}</h3>
           <div>
-            <img :src="coverList[0].coverImgUrl" alt="" />
+            <img :src="coverList[0].coverImgUrl" alt=""/>
           </div>
         </div>
       </div>
@@ -22,15 +23,15 @@
       <div class="music-list-slide">
         <div class="music-list" v-for="(item) of coverList" :key="item.id" @click="handleClick(item.id)">
           <span v-for="(music, i) of item.tracks" :key="music.first">{{
-            `${i + 1}.${music.first}-${music.second}`
-          }}</span>
+              `${i + 1}.${music.first}-${music.second}`
+            }}</span>
         </div>
         <!-- 重复一次第一个可以实现无限的轮播 -->
         <div class="music-list" @click="handleClick(coverList[0].id)" :data-id="coverList[0].id">
           <span
-            v-for="(music, i) of coverList[0].tracks"
-            :key="music.first + 'last'"
-            >{{ `${i + 1}.${music.first}-${music.second}` }}</span
+              v-for="(music, i) of coverList[0].tracks"
+              :key="music.first + 'last'"
+          >{{ `${i + 1}.${music.first}-${music.second}` }}</span
           >
         </div>
       </div>
@@ -39,13 +40,20 @@
 </template>
 
 <script>
-import dd from "../testData/slide.js";
+import request from '@/request/request'
+
 export default {
   name: "",
   data() {
     return {
-      info: dd.list,
+      // info: dd.list,
+      info: null,
     };
+  },
+  created() {
+    request("/toplist/detail").then(({data}) => {
+      this.info = data.list.slice(0, 4);
+    });
   },
   methods: {
     handleClick(id) {
@@ -54,18 +62,23 @@ export default {
   },
   computed: {
     coverList() {
+      if (!this.info) {
+        return;
+      }
       return this.info
-        .map((item) => {
-          return {
-            tracks: item.tracks,
-            name: item.name,
-            id: item.id,
-            coverImgUrl: item.coverImgUrl,
-          };
-        })
-        .slice(0, 4);
+          .map((item) => {
+            return {
+              tracks: item.tracks,
+              name: item.name,
+              id: item.id,
+              coverImgUrl: item.coverImgUrl,
+            };
+          })
     },
     musicList() {
+      if (!this.coverList) {
+        return;
+      }
       return this.coverList.map((item) => {
         return {
           tracks: item.tracks,
@@ -93,9 +106,11 @@ $music-list-width: 400px;
   border-radius: $radius;
   border: 1px solid teal;
   padding: 3px;
+
   &:hover .cover-slide {
     animation-play-state: paused;
   }
+
   &:hover .music-list-slide {
     animation-play-state: paused;
   }
@@ -123,6 +138,7 @@ img {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+
   & > span {
     width: $music-list-width - 20px;
     white-space: nowrap;
