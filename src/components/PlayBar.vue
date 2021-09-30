@@ -54,7 +54,7 @@
     </div>
 
     <div class="rest-container">
-      <span>04:15/{{ musicInfo.duration }}</span>
+      <span>{{durationTime}}/{{ musicInfo.duration }}</span>
       <span>词</span>
       <div class="list">
         <v-icon
@@ -73,6 +73,7 @@ import "vue-awesome/icons";
 import {mapGetters} from 'vuex';
 import defaultCover from '../image/defaultCover.jpg';
 import request from '@/request/request';
+import {formatDuration} from '@/utils/index.js';
 
 export default {
   name: 'PlayBar',
@@ -161,6 +162,13 @@ export default {
     switchBtn() {
       return this.paused ? 'cover-paused': 'cover-running';
     },
+    durationTime() {
+      if (this.currentTime === 0) {
+        return '00:00';
+      } else {
+        return formatDuration(this.currentTime * 1000);
+      }
+    }
   },
 
   methods: {
@@ -265,9 +273,11 @@ $music-controls-height: 60px;
   position: fixed;
   bottom: 0;
   left: 0;
-  width: 100%;
+  // min-width: 400px;
+  width: 100vw;
   // 为进度条留出空隙
-  padding: 5px 8px 0 8px;
+  padding: 8px;
+  padding-bottom: 0;
   z-index: 3;
 
   &::before {
@@ -332,6 +342,7 @@ $music-controls-height: 60px;
 }
 
 .control-center {
+  min-width: 300px;
   & > * {
     cursor: pointer;
     margin: 0 30px;
