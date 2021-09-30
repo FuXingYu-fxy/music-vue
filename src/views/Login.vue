@@ -20,6 +20,7 @@
 import request from '@/request/request';
 import {mapMutations} from 'vuex';
 import {UPDATE_USER_INFO} from '@/store/actionType';
+import md5 from 'md5';
 
 export default {
   name: "Login",
@@ -49,7 +50,7 @@ export default {
       this.isLoading = true;
       request.post('/login', {
         email: this.formData.account,
-        password: this.formData.passwd,
+        md5_password: md5(this.formData.passwd),
       }).then(({data}) => {
         if (data.code === 200) {
           const {id, userName, vipType, viptypeVersion, anonimousUser} = data.account;
