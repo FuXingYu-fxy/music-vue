@@ -1,64 +1,85 @@
 <template>
-  <div class="music-controls">
-    <div class="process">
-      <div class="process-bar" :style="currentPosition"></div>
-    </div>
-    <div class="music-cover">
-      <img
-        :class="['cover-spin', audio.paused ? 'cover-paused' : 'cover-running']"
-        :src="musicInfo.coverImgUrl"
-        alt="专辑封面"
-      />
-      <div class="music-info">
-        <span>{{ musicInfo.name }}/{{ musicInfo.artists }}</span>
-        <div class="button-list">
-          <v-icon
-            :name="likeThisMusic ? 'regular/heart' : 'heart'"
-            title="喜欢"
-            scale="1"
-            :style="{
+  <div>
+    <el-drawer
+        title="播放队列"
+        :visible.sync="drawer"
+        direction="rtl"
+    >
+      <div class="play-queue">
+        <span
+            v-for="(item, index) of currentPlayList"
+            :key="item.id"
+            :class="{'current-play-music': index === currentIndex}"
+            @click="updateCurrentPlayListByIndex(index)"
+        >
+          {{ item.songTitle }}
+          <hr>
+        </span>
+      </div>
+    </el-drawer>
+    <div class="music-controls">
+      <div class="process">
+        <div class="process-bar" :style="currentPosition"></div>
+      </div>
+      <div class="music-cover">
+        <img
+            :class="['cover-spin', audio.paused ? 'cover-paused' : 'cover-running']"
+            :src="musicInfo.coverImgUrl"
+            alt="专辑封面"
+        />
+        <div class="music-info">
+          <div class="music-name">
+            <span>{{ musicInfo.name }}/{{ musicInfo.artists }}</span>
+          </div>
+          <div class="button-list">
+            <v-icon
+                :name="likeThisMusic ? 'regular/heart' : 'heart'"
+                title="喜欢"
+                scale="1"
+                :style="{
               color: likeThisMusic ? '' : 'teal',
             }"
-            @click="like"
-          />
+                @click="like"
+            />
 
-          <v-icon name="download" title="下载" />
+            <v-icon name="download" title="下载"/>
 
-          <v-icon name="regular/comment-dots" title="评论" />
+            <v-icon name="regular/comment-dots" title="评论"/>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="control-center">
-      <v-icon
-        name="angle-double-left"
-        :scale="controlCenterSize"
-        title="上一首"
-        @click="prev"
-      />
+      <div class="control-center">
+        <v-icon
+            name="angle-double-left"
+            :scale="controlCenterSize"
+            title="上一首"
+            @click="prev"
+        />
 
-      <!--播放按钮-->
-      <v-icon
-        :name="audio.paused ? 'regular/play-circle' : 'regular/pause-circle'"
-        :scale="controlCenterSize"
-        :title="audio.paused ? '播放' : '暂停'"
-        @click="toggle"
-      />
+        <!--播放按钮-->
+        <v-icon
+            :name="audio.paused ? 'regular/play-circle' : 'regular/pause-circle'"
+            :scale="controlCenterSize"
+            :title="audio.paused ? '播放' : '暂停'"
+            @click="toggle"
+        />
 
-      <v-icon
-        :scale="controlCenterSize"
-        name="angle-double-right"
-        title="下一首"
-        @click="next"
-      />
-    </div>
+        <v-icon
+            :scale="controlCenterSize"
+            name="angle-double-right"
+            title="下一首"
+            @click="next"
+        />
+      </div>
 
-    <div class="rest-container">
-      <span>{{ durationTime }}/{{ musicInfo.duration }}</span>
-      <span>词</span>
-      <div class="list">
-        <v-icon name="headphones-alt" title="展开列表" />
-        <span>3</span>
+      <div class="rest-container">
+        <span>{{ durationTime }}/{{ musicInfo.duration }}</span>
+        <span>词</span>
+        <div class="list" @click="toggleDrawer">
+          <v-icon name="headphones-alt" title="播放队列"/>
+          <span>{{ currentPlayList.length }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -67,15 +88,18 @@
 <script>
 import Icon from "vue-awesome/components/Icon";
 import "vue-awesome/icons";
-import { mapGetters, mapMutations, } from "vuex";
+import {mapGetters, mapMutations,} from "vuex";
 import {UPDATE_CURRENT_PLAY} from '@/store/actionType.js';
 import defaultCover from "../image/defaultCover.jpg";
 import request from "@/request/request";
-import { formatDuration } from "@/utils/index.js";
-import { debounce } from "@/utils/index.js";
+import {formatDuration} from "@/utils/index.js";
+import {debounce} from "@/utils/index.js";
 
 export default {
   name: "PlayBar",
+  components: {
+    "v-icon": Icon,
+  },
   data() {
     return {
       /**
@@ -101,6 +125,7 @@ export default {
       // 喜欢歌曲时, 要传入true
       likeThisMusic: true,
       currentIndex: 0,
+      drawer: false,
     };
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
@@ -123,9 +148,7 @@ export default {
     this.audio.removeListener("timeupdate", this.handleTimeupdate);
   },
   // ↑ ↑ ↑ ↑ ↑ 生命周期 ↑ ↑ ↑ ↑ ↑ ↑
-  components: {
-    "v-icon": Icon,
-  },
+
   computed: {
     ...mapGetters(["currentPlaySong", "currentPlayList"]),
     currentPosition() {
@@ -192,7 +215,7 @@ export default {
       console.log("播放下一首");
     },
     prev() {
-      let index = this.currentIndex - 1 ;
+      let index = this.currentIndex - 1;
       index = index < 0 ? this.currentPlayList.length - 1 : index;
       this.updateCurrentPlayListByIndex(index);
       console.log("播放上一首");
@@ -221,6 +244,9 @@ export default {
       this.likeThisMusic = !this.likeThisMusic;
       this.debouncedFn("/like", this.currentPlaySong.id, this.likeThisMusic);
     },
+    toggleDrawer() {
+      this.drawer = true;
+    },
   },
   watch: {
     async currentPlaySong(musicInfo) {
@@ -230,14 +256,14 @@ export default {
       this.duration = musicInfo.dt;
       const id = musicInfo.id;
       try {
-        let { data } = await request.get("/check/music", {
+        let {data} = await request.get("/check/music", {
           params: {
             id,
           },
         });
         if (data.success) {
           // 再次请求
-          let { data: result } = await request.get("/song/url", {
+          let {data: result} = await request.get("/song/url", {
             params: {
               id,
             },
@@ -276,6 +302,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "../scss/scrollbar-style";
+
 $music-controls-height: 60px;
 
 .music-controls {
@@ -291,8 +319,7 @@ $music-controls-height: 60px;
   // min-width: 400px;
   width: 100vw;
   // 为进度条留出空隙
-  padding: 8px;
-  padding-bottom: 0;
+  padding: 8px 8px 0;
   z-index: 3;
 
   &::before {
@@ -314,12 +341,14 @@ $music-controls-height: 60px;
   height: 4px;
   width: 100%;
   top: 0;
+
   .process-bar {
     position: absolute;
     background-color: teal;
     height: 100%;
   }
 }
+
 .music-cover {
   display: flex;
   flex-direction: row;
@@ -337,9 +366,18 @@ $music-controls-height: 60px;
   display: flex;
   flex-direction: column;
 
-  span {
-    margin-left: 15px;
+  .music-name {
+    position: relative;
+    min-width: 100px;
+
+    span {
+      position: absolute;
+      margin-left: 15px;
+      left: 0;
+      white-space: nowrap;
+    }
   }
+
 
   .button-list {
     display: flex;
@@ -357,6 +395,7 @@ $music-controls-height: 60px;
 
 .control-center {
   min-width: 300px;
+
   & > * {
     cursor: pointer;
     margin: 0 30px;
@@ -387,6 +426,7 @@ $music-controls-height: 60px;
 .cover-paused {
   animation-play-state: paused;
 }
+
 .cover-running {
   animation-play-state: running;
 }
@@ -395,5 +435,19 @@ $music-controls-height: 60px;
   100% {
     transform: rotate(1turn);
   }
+}
+
+.play-queue {
+  overflow: auto;
+  @include scrollbar();
+  height: 100%;
+
+  & > span:hover {
+    cursor: pointer;
+    color: #99a9bf;
+  }
+}
+.current-play-music {
+  color: #31c27c;
 }
 </style>
