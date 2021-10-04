@@ -24,7 +24,14 @@
     <el-divider/>
     <el-table
         :data="playList"
-        style="width: 100%">
+        style="width: 100%"
+        class="scroll-table"
+        height="400px"
+        highlight-current-row
+        v-el-table-infinite-scroll="load"
+        infinite-scroll-disabled="disabled"
+
+    >
       <el-table-column
           type="index"
           width="50">
@@ -55,7 +62,14 @@
           label="专辑"
       >
       </el-table-column>
+
+      <template v-slot:append>
+        <div id="loading-flag">
+          <p v-show="loading">加载中...</p>
+        </div>
+      </template>
     </el-table>
+    <div style="height: 200px"></div>
   </div>
 </template>
 
@@ -64,8 +78,13 @@ import request from '@/request/request';
 import {parseSongInfo} from '@/utils';
 import {mapMutations} from 'vuex';
 import {UPDATE_CURRENT_PLAY, UPDATE_CURRENT_PLAY_LIST} from '@/store/actionType';
+import elTableInfiniteScroll from 'el-table-infinite-scroll';
+
 
 export default {
+  directives: {
+    'el-table-infinite-scroll': elTableInfiniteScroll
+  },
   name: "PlayList",
   props: {
     ids: {
@@ -88,6 +107,18 @@ export default {
   data() {
     return {
       playList: null,
+      loading: false,
+    }
+  },
+  computed: {
+    noMore() {
+      return false;
+    },
+    disabled() {
+      return this.songDetails.length >= 80;
+    },
+    copyList() {
+      return this.songDetails.slice(0, 10);
     }
   },
   methods: {
@@ -102,6 +133,13 @@ export default {
       // 将播放列表保存到 store
       this.updateCurrentPlayList(this.playList);
     },
+    load() {
+      this.loading = true;
+      setTimeout(() => {
+        this.songDetails = this.songDetails.concat(this.copyList);
+        this.loading = false;
+      }, 2000); 
+    }
   },
   watch: {
     songDetails: {
@@ -120,7 +158,6 @@ export default {
         request.get('/song/detail', {
           params: {
             ids: ids.slice(0, 20).join(','),
-            timestamp: Date.now(),
           }
         }).then(({data}) => {
           if (data.code === 200) {

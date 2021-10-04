@@ -78,7 +78,7 @@
         <span>词</span>
         <div class="list" @click="toggleDrawer">
           <v-icon name="headphones-alt" title="播放队列"/>
-          <span>{{ currentPlayList.length }}</span>
+          <span>{{musicCount}}</span>
         </div>
       </div>
     </div>
@@ -183,6 +183,9 @@ export default {
         return formatDuration(this.currentTime * 1000);
       }
     },
+    musicCount() {
+      return this.currentPlayList ? this.currentPlayList.length : 0;
+    }
   },
 
   methods: {
