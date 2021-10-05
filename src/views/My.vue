@@ -243,7 +243,7 @@ export default {
 
 <style lang="scss" scoped>
 .recommend {
-  transition: 0.5s;
+  transition: .1s;
   background: white;
 }
 .banner {

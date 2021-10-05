@@ -64,9 +64,8 @@
       </el-table-column>
 
       <template v-slot:append>
-        <div id="loading-flag">
-          <p v-show="loading">加载中...</p>
-        </div>
+        <p v-show="loading">加载中...</p>
+        <p v-show="noMore">没有更多了</p>
       </template>
     </el-table>
     <div style="height: 200px"></div>
@@ -106,20 +105,23 @@ export default {
   },
   data() {
     return {
-      playList: null,
+      playList: [],
       loading: false,
+      start: 0,
+      // 一次性只显示20首
+      end: 20,
+      // 每次增加15首
+      increment: 15,
     }
   },
   computed: {
     noMore() {
-      return false;
+      // 如果是每日歌单，就不加载
+      return this.playList.length >= this.totalLen;
     },
     disabled() {
-      return this.songDetails.length >= 80;
+      return this.loading || this.noMore;
     },
-    copyList() {
-      return this.songDetails.slice(0, 10);
-    }
   },
   methods: {
     ...mapMutations({
@@ -134,11 +136,44 @@ export default {
       this.updateCurrentPlayList(this.playList);
     },
     load() {
+      console.log('加载');
       this.loading = true;
-      setTimeout(() => {
-        this.songDetails = this.songDetails.concat(this.copyList);
+      this.start = this.end;
+      this.end += this.increment;
+      const ids = this.ids.slice(this.start, this.end).map(item => item.id);
+      this.getSongsByIds(ids).then(() => {
         this.loading = false;
-      }, 2000); 
+      })
+    },
+    getSongsByIds(ids, initial = false) {
+      return request.get('/song/detail', {
+        params: {
+          ids: ids.join(','),
+        }
+      }).then(({data}) => {
+        if (data.code === 200) {
+          if (initial) {
+            // 如果是初次挂载，就要重置this.playList
+            this.playList = data.songs.map(parseSongInfo);
+          } else {
+            // 否则只需要concat
+            this.playList = this.playList.concat(data.songs.map(parseSongInfo));
+          }
+        } else {
+          this.$message({
+            message: `${data.msg}, 状态码: ${data.code}`,
+            type: 'info'
+          })
+        }
+      }).catch(err => {
+        this.$message({
+          message: '发生错误, 请到控制面板查看',
+          type: 'error'
+        })
+        console.group('PlayList loadRest');
+        console.log(err);
+        console.groupEnd('PlayList loadRest');
+      })
     }
   },
   watch: {
@@ -153,30 +188,10 @@ export default {
     ids: {
       handler(newIds) {
         if (!newIds) return;
+        this.start = 0;
+        this.end = 20;
         const ids = newIds.map(item => item.id);
-        // POST请求url必须添加时间戳,使每次请求url不一样,不然请求会被缓存
-        request.get('/song/detail', {
-          params: {
-            ids: ids.slice(0, 20).join(','),
-          }
-        }).then(({data}) => {
-          if (data.code === 200) {
-            this.playList = data.songs.map(parseSongInfo);
-          } else {
-            this.$message({
-              message: `${data.msg}, 状态码: ${data.code}`,
-              type: 'info'
-            })
-          }
-        }).catch(err => {
-          this.$message({
-            message: '发生错误, 请到控制面板查看',
-            type: 'error'
-          })
-          console.group('PlayList loadRest');
-          console.log(err);
-          console.groupEnd('PlayList loadRest');
-        })
+        this.getSongsByIds(ids.slice(this.start, this.end), true);
       },
       immediate: true,
     }
