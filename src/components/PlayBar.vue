@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="position: relative">
     <el-drawer
         title="播放队列"
         :visible.sync="drawer"
@@ -17,6 +17,7 @@
         </span>
       </div>
     </el-drawer>
+    <comment :status.sync="commentStatus" :id="currentMusicId" />
     <div class="music-controls">
       <div class="process">
         <div class="process-bar" :style="currentPosition"></div>
@@ -44,7 +45,7 @@
 
             <v-icon name="download" title="下载"/>
 
-            <v-icon name="regular/comment-dots" title="评论"/>
+            <v-icon name="regular/comment-dots" title="评论" @click="commentStatus='grow'"/>
           </div>
         </div>
       </div>
@@ -94,11 +95,13 @@ import defaultCover from "../image/defaultCover.jpg";
 import request from "@/request/request";
 import {formatDuration} from "@/utils/index.js";
 import {debounce} from "@/utils/index.js";
+import Comment from './Comment.vue';
 
 export default {
   name: "PlayBar",
   components: {
     "v-icon": Icon,
+    Comment,
   },
   data() {
     return {
@@ -126,6 +129,8 @@ export default {
       likeThisMusic: true,
       currentIndex: 0,
       drawer: false,
+      commentStatus: 'shrink',
+      currentMusicId: 0,
     };
   },
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
@@ -275,6 +280,7 @@ export default {
           if (result.code === 200) {
             // 添加 url, 开始播放
             this.audio.src = result.data[0].url;
+            this.currentMusicId = id;
           } else {
             this.$message({
               message: `${result.msg}, 状态码: ${result.code}`,

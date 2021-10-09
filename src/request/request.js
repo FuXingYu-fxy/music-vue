@@ -1,7 +1,7 @@
 import axios from 'axios';
 const request = axios.create({
   baseURL: 'http://localhost:3000',
-  timeout: 2000,
+  timeout: 4000,
   withCredentials: true,
 })
 
