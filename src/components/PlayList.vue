@@ -64,11 +64,11 @@
       </el-table-column>
 
       <template v-slot:append>
-        <p v-show="loading">加载中...</p>
+        <p v-show="!noMore">加载中...</p>
         <p v-show="noMore">没有更多了</p>
       </template>
     </el-table>
-    <div style="height: 200px"></div>
+    <!-- <div style="height: 200px"></div> -->
   </div>
 </template>
 
@@ -116,7 +116,6 @@ export default {
   },
   computed: {
     noMore() {
-      // 如果是每日歌单，就不加载
       return this.playList.length >= this.totalLen;
     },
     disabled() {

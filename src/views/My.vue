@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 200vh">
+  <div class="my-container">
     <div class="banner" ref="banner">
       <img class="avatar" alt="avatar" />
       <div class="user-profile">
@@ -242,6 +242,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.my-container {
+  text-align: center;
+}
 .recommend {
   transition: .1s;
   background: white;
