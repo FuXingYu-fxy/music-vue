@@ -1,6 +1,6 @@
 <template>
   <div
-    class="container"
+    class="comment-container"
     :style="{ transform: currentShowStatus }"
     @click="shrink"
   >
@@ -8,16 +8,15 @@
       v-for="(item, index) of curInfo"
       :key="index"
       :comment="item"
+      :class="{ 'last-comment': index === curInfo.length - 1 }"
     />
-    <button @click.stop="requestComment({ id, pageNo: 2 })">第2页</button>
-    <button @click.stop="requestComment({ id, pageNo: 3 })">第3页</button>
-    <button @click.stop="requestComment({ id, pageNo: 4 })">第4页</button>
   </div>
 </template>
 
 <script>
 import CommentWidget from "./CommentWidget.vue";
 import request from "@/request/request.js";
+import { throttle } from "@/utils/index.js";
 export default {
   components: { CommentWidget },
   props: {
@@ -38,7 +37,26 @@ export default {
       previousTime: 0,
       curInfo: [],
       more: true,
+      lastComment: null,
+      screenHeight: 0,
+      isLoading: false,
+      curPage: 1,
     };
+  },
+  created() {
+    this.$once("initialLoad", () => {
+      console.log("初次加载...");
+      this.screenHeight = window.innerHeight;
+      this.lastComment = document.querySelector(".last-comment");
+      document
+        .querySelector(".comment-container")
+        .addEventListener("scroll", this.load);
+    });
+  },
+  updated() {
+    if (this.curInfo.length !== 0) {
+      this.lastComment = document.querySelector(".last-comment");
+    }
   },
   methods: {
     shrink() {
@@ -64,9 +82,9 @@ export default {
     }) {
       if (!this.more) {
         // 没有更多的评论
-        return;
+        return Promise.reject("没有更多的评论");
       }
-      request
+      return request
         .get("/comment/new", {
           params: {
             id,
@@ -83,7 +101,7 @@ export default {
             const lastIndex = data.comments.length - 1;
             this.previousTime = data.comments[lastIndex].time;
             this.more = data.hasMore;
-            this.curInfo = data.comments.map((item) => {
+            let result = data.comments.map((item) => {
               return {
                 avatarUrl: item.user.avatarUrl,
                 nickname: item.user.nickname,
@@ -93,11 +111,27 @@ export default {
                 liked: item.liked,
               };
             });
+            this.curInfo = this.curInfo.concat(result);
           } else {
-            console.error('歌词获取错误');
+            console.error("歌词获取错误");
           }
         });
     },
+    load: throttle(function () {
+      if (
+        this.lastComment.getBoundingClientRect().top <= this.screenHeight &&
+        this.more &&
+        !this.isLoading
+      ) {
+        this.isLoading = true;
+        this.requestComment({ id: this.id, pageNo: this.curPage + 1 }).then(
+          () => {
+            this.curPage = this.curPage + 1;
+            this.isLoading = false;
+          }
+        );
+      }
+    }, 100),
   },
   computed: {
     currentShowStatus() {
@@ -117,7 +151,10 @@ export default {
     id(newId) {
       // 歌曲id发生变更时, 应该重置以下信息
       this.more = true;
-      this.requestComment({ id: newId });
+      this.curInfo = [];
+      this.requestComment({ id: newId }).then(() => {
+        this.$emit("initialLoad");
+      });
     },
   },
 };
@@ -125,7 +162,7 @@ export default {
 
 <style lang="scss" scoped>
 @import "../scss/scrollbar-style";
-.container {
+.comment-container {
   @include scrollbar();
   height: 100vh;
   overflow: auto;
