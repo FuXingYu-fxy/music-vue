@@ -45,7 +45,6 @@ export default {
   },
   created() {
     this.$once("initialLoad", () => {
-      console.log("初次加载...");
       this.screenHeight = window.innerHeight;
       this.lastComment = document.querySelector(".last-comment");
       document
@@ -109,6 +108,8 @@ export default {
                 time: item.time,
                 likedCount: item.likedCount,
                 liked: item.liked,
+                cid: item.commentId,
+                id: this.id,
               };
             });
             this.curInfo = this.curInfo.concat(result);

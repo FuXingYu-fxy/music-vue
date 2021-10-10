@@ -9,7 +9,16 @@
 
       <div class="other-info">
         <span>{{toLocalTime}}</span>
-        <span>点赞数({{comment.likedCount}}) | 回复</span>
+        
+        <span @click.stop="likeThis">
+          <v-icon
+            name="thumbs-up"
+            title="喜欢"
+            :style="{
+              color: liked ? 'red' : 'gray',
+            }"
+          />({{likedCount}})
+        </span>
       </div>
     </div>
   </div>
@@ -17,10 +26,16 @@
 
 <script>
 // import info from "@/testData/index.js";
+import "vue-awesome/icons";
+import Icon from "vue-awesome/components/Icon";
+import {debounce} from '@/utils/index.js';
+import request from '@/request/request.js';
 export default {
   name: "CommentWidget",
   props: ["comment"],
-  components: {},
+  components: {
+    'v-icon': Icon,
+  },
   computed: {
     toLocalTime() {
       return new Date(this.comment.time).toLocaleString();
@@ -29,8 +44,37 @@ export default {
   data() {
     return {
       // info,
+      liked: this.comment.liked,
+      likedCount: this.comment.likedCount,
     };
   },
+  methods: {
+    requestLike: debounce(function ({id, cid, t, type=0}) {
+      if ([id, cid, t, type].includes('undefined')) {
+        return Promise.reject('缺少必要参数');
+      }
+      return request.get('/comment/like', {
+        params: {
+          id,
+          cid,
+          t,
+          type,
+        }
+      })
+    }, 2000),
+    likeThis() {
+      this.liked = !this.liked;
+      this.likedCount = this.liked 
+      ? this.likedCount + 1 
+      : this.likedCount - 1;
+      this.requestLike({
+        id: this.comment.id,
+        cid: this.comment.cid,
+        type: 0,
+        t: +this.liked,
+      })
+    }
+  }
 };
 </script>
 
@@ -40,12 +84,13 @@ export default {
   margin-bottom: 5px;
   flex-direction: row;
   & > img {
-    width: 100px;
-    height: 100px;
+    width: 50px;
+    height: 50px;
   }
 }
 .side-right {
   width: 600px;
+  min-width: 700px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -54,6 +99,10 @@ export default {
 .other-info {
   display: flex;
   justify-content: space-between;
+  & span:nth-child(2) {
+    cursor: pointer;
+    user-select: none;
+  }
 }
 .nickname {
   color: #4c790d;
