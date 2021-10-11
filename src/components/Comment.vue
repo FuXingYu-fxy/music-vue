@@ -3,12 +3,18 @@
     class="comment-container"
     :style="{ transform: currentShowStatus }"
     @click="shrink"
+    @scroll="load"
+    ref="commentContainer"
   >
     <CommentWidget
       v-for="(item, index) of curInfo"
       :key="index"
       :comment="item"
       :class="{ 'last-comment': index === curInfo.length - 1 }"
+    />
+    <lyric 
+      :style="{ transform: translateY }"
+      :id="id"
     />
   </div>
 </template>
@@ -17,8 +23,9 @@
 import CommentWidget from "./CommentWidget.vue";
 import request from "@/request/request.js";
 import { throttle } from "@/utils/index.js";
+import Lyric from '@/components/Lyric.vue';
 export default {
-  components: { CommentWidget },
+  components: { CommentWidget, Lyric },
   props: {
     status: {
       validator(value) {
@@ -41,19 +48,15 @@ export default {
       screenHeight: 0,
       isLoading: false,
       curPage: 1,
+      commentContainerOffset: 0,
     };
   },
-  created() {
-    this.$once("initialLoad", () => {
-      this.screenHeight = window.innerHeight;
-      this.lastComment = document.querySelector(".last-comment");
-      document
-        .querySelector(".comment-container")
-        .addEventListener("scroll", this.load);
-    });
+  mounted() {
+    this.$refs.commentContainer.addEventListener("scroll", this.changeOffset);
   },
   updated() {
     if (this.curInfo.length !== 0) {
+      this.screenHeight = window.innerHeight;
       this.lastComment = document.querySelector(".last-comment");
     }
   },
@@ -133,10 +136,16 @@ export default {
         );
       }
     }, 100),
+    changeOffset(e) {
+      this.commentContainerOffset = e.currentTarget.scrollTop;
+    },
   },
   computed: {
     currentShowStatus() {
       return this.status === "shrink" ? "translateY(-100%)" : "translateY(0%)";
+    },
+    translateY() {
+      return `translateY(${this.commentContainerOffset}px)`;
     },
   },
   watch: {
@@ -153,9 +162,7 @@ export default {
       // 歌曲id发生变更时, 应该重置以下信息
       this.more = true;
       this.curInfo = [];
-      this.requestComment({ id: newId }).then(() => {
-        this.$emit("initialLoad");
-      });
+      this.requestComment({ id: newId });
     },
   },
 };
@@ -174,4 +181,5 @@ export default {
   z-index: 999;
   transition: 0.5s;
 }
+
 </style>

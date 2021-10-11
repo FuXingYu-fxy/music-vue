@@ -76,7 +76,7 @@
 
       <div class="rest-container">
         <span>{{ durationTime }}/{{ musicInfo.duration }}</span>
-        <span>词</span>
+        <span @click="commentStatus='grow'">词</span>
         <div class="list" @click="toggleDrawer">
           <v-icon name="headphones-alt" title="播放队列"/>
           <span>{{musicCount}}</span>
