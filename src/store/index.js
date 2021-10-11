@@ -4,6 +4,7 @@ import {
   UPDATE_USER_INFO,
   UPDATE_CURRENT_PLAY,
   UPDATE_CURRENT_PLAY_LIST,
+  UPDATE_CURRENT_TIME,
 } from '@/store/actionType';
 
 Vue.use(Vuex)
@@ -18,6 +19,9 @@ export default new Vuex.Store({
     
     // 当前的音乐列表
     currentPlayList: null,
+
+    // 当前音乐进度
+    currentTime: 0,
   },
   getters: {
     userInfo(state) {
@@ -30,6 +34,9 @@ export default new Vuex.Store({
     
     currentPlayList(state) {
       return state.currentPlayList;
+    },
+    currentTime(state) {
+      return state.currentTime;
     }
   },
   mutations: {
@@ -48,6 +55,9 @@ export default new Vuex.Store({
     // 更新当前播放歌曲的信息
     [UPDATE_CURRENT_PLAY](state, payload) {
       state.currentPlaySong = payload;
+    },
+    [UPDATE_CURRENT_TIME](state, payload) {
+      state.currentTime = payload;
     }
   },
   actions: {

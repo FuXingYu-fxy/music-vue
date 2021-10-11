@@ -90,7 +90,7 @@
 import Icon from "vue-awesome/components/Icon";
 import "vue-awesome/icons";
 import {mapGetters, mapMutations,} from "vuex";
-import {UPDATE_CURRENT_PLAY} from '@/store/actionType.js';
+import {UPDATE_CURRENT_PLAY, UPDATE_CURRENT_TIME, } from '@/store/actionType.js';
 import defaultCover from "../image/defaultCover.jpg";
 import request from "@/request/request";
 import {formatDuration} from "@/utils/index.js";
@@ -137,17 +137,17 @@ export default {
   created() {
     // 创建 audio
     this.audio = new Audio();
-    this.audio.addEventListener("canplay", this.play);
+    this.audio.addEventListener("canplaythrough", this.play);
     this.audio.addEventListener("ended", this.next);
     this.audio.addEventListener("timeupdate", this.handleTimeupdate);
     // 至于 为什么这个监听器不会丢失 this, 猜测是vue 内部对所有 methods 的函数都做了 bind 处理
-    // this.audio.addEventListener('canplay', function() {
+    // this.audio.addEventListener('canplaythrough', function() {
     //   console.log(this);
     // }.bind(this));
   },
   beforeDestroy() {
     // 移除绑定的事件
-    this.audio.removeListener("canplay", this.play);
+    this.audio.removeListener("canplaythrough", this.play);
     // 播放结束后自动播放下一首
     this.audio.removeListener("ended", this.next);
     this.audio.removeListener("timeupdate", this.handleTimeupdate);
@@ -196,9 +196,10 @@ export default {
   methods: {
     ...mapMutations({
       updateCurrentPlay: UPDATE_CURRENT_PLAY,
+      updateCurrentTime: UPDATE_CURRENT_TIME,
     }),
     toggle() {
-      // 当终端可以播放媒体文件时触发该canplay事件，估计加载足够的数据来播放媒体直到其结束，而不必停止以进一步缓冲内容。
+      // 当终端可以播放媒体文件时触发该canplaythrough事件，估计加载足够的数据来播放媒体直到其结束，而不必停止以进一步缓冲内容。
       if (this.audio.paused) {
         // 如果当前 是暂停状态, 就要播放音乐
         this.play();
@@ -235,6 +236,8 @@ export default {
     },
     handleTimeupdate() {
       this.currentTime = this.audio.currentTime;
+      // 共享至 store
+      this.updateCurrentTime(this.currentTime);
     },
     debouncedFn: debounce(function (url, id, currentState) {
       request.get(url, {
