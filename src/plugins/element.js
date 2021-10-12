@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import '../scss/element-variables.scss';
+import CollapseTransition from 'element-ui/lib/transitions/collapse-transition';
 import {
   Button,
   Row,
@@ -40,5 +41,6 @@ Vue.use(TableColumn);
 Vue.use(Tabs);
 Vue.use(TabPane);
 Vue.use(Drawer);
+Vue.component(CollapseTransition.name, CollapseTransition);
 
 Vue.prototype.$message = Message;

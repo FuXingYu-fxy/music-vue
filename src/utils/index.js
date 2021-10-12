@@ -79,7 +79,7 @@ function throttle(fn, ms) {
  */
 function parseSongInfo(item) {
   // tns 是歌曲别名数组 tns[0] 是名字, 注意!!! 只有个别歌有 tns 这个字段
-  // ar 是作者数组， ar[0].name 是作者名
+  // ar 是作者数组， scrollbarar[0].name 是作者名
   // al 是专辑, 一个对象
   const { name, ar, id, tns, dt, al} = item;
   const songAlias = tns && tns.join('/');
