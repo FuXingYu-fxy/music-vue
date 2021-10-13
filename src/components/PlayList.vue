@@ -135,7 +135,6 @@ export default {
       this.updateCurrentPlayList(this.playList);
     },
     load() {
-      console.log('加载');
       this.loading = true;
       this.start = this.end;
       this.end += this.increment;
@@ -158,6 +157,8 @@ export default {
             // 否则只需要concat
             this.playList = this.playList.concat(data.songs.map(parseSongInfo));
           }
+          // 传递playList
+          this.$emit('playListChange', this.playList);
         } else {
           this.$message({
             message: `${data.msg}, 状态码: ${data.code}`,

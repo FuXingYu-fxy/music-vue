@@ -13,7 +13,7 @@
       />
       <div class="search"></div>
     </div>
-    <div class="search-result" v-show="show">
+    <div :class="['search-result', {'search-result-hidden': hidden}]">
       <span
         class="result"
         v-for="item of result"
@@ -37,7 +37,7 @@ export default {
     return {
       value: "",
       result: [],
-      show: false,
+      hidden: true,
     };
   },
   methods: {
@@ -47,7 +47,7 @@ export default {
     hideSearchResult() {
       setTimeout(() => {
         this.value = "";
-        this.show = false;
+        this.hidden = true;
       }, 200);
     },
     handleInputDebounce: debounce(async function (e) {
@@ -64,7 +64,7 @@ export default {
         });
         if (data.code === 200) {
           this.result = data.result.songs;
-          this.show = true;
+          this.hidden = false;
         }
       } catch (err) {
         console.group("Search handleInputDebounce");
@@ -200,11 +200,12 @@ export default {
     cursor: pointer;
   }
 }
-.search-container .search-result {
+.search-result {
   @include scrollbar();
   height: 200px;
   min-height: 200px;
   width: 10rem;
+  transition: .5s;
   overflow: hidden auto;
   position: absolute;
   z-index: 10;
@@ -220,5 +221,9 @@ export default {
       color: $theme-color;
     }
   }
+}
+.search-result-hidden {
+  height: 0;
+  min-height: 0;
 }
 </style>

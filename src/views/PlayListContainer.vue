@@ -7,6 +7,7 @@
         :ids="songInfo.trackIds"
         :play-count="songInfo.playCount"
         :total-len="songInfo.totalLen"
+        @playListChange="playListChange"
     >
       <template v-slot:play-list-description>
         <PlayListDescription
@@ -16,6 +17,7 @@
             :name="songInfo.name"
             :subscribed-count="songInfo.subscribedCount"
             :tags="songInfo.tags"
+            :list="list"
         />
       </template>
     </PlayList>
@@ -37,6 +39,12 @@ export default {
   data() {
     return {
       songInfo: null,
+      list: [],
+    }
+  },
+  methods: {
+    playListChange(list) {
+      this.list = list;
     }
   },
   created() {
