@@ -50,19 +50,7 @@ export default {
     },
   },
   watch: {
-    show: {
-      handler(value) {
-        let margin = "";
-        let hidden = "";
-        if (value) {
-          margin = 0;
-          hidden = "hidden";
-        }
-        document.body.style.margin = margin;
-        document.body.style.overflow = hidden;
-      },
-      immediate: true,
-    },
+    
   },
 };
 </script>
