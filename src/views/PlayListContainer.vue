@@ -18,6 +18,7 @@
             :subscribed-count="songInfo.subscribedCount"
             :tags="songInfo.tags"
             :list="list"
+            :playlistid="id"
         />
       </template>
     </PlayList>
@@ -35,6 +36,7 @@ export default {
     PlayListDescription,
     PlayList,
   },
+  // 路由传过来的id
   props: ['id'],
   data() {
     return {

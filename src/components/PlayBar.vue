@@ -219,6 +219,10 @@ export default {
       }
     },
     next() {
+      if (this.currentPlayList == null) {
+        // 如果是搜索播放的, 就没有播放队列
+        return;
+      }
       let index = (this.currentIndex + 1) % this.currentPlayList.length;
       this.updateCurrentPlayListByIndex(index);
       console.log("播放下一首");

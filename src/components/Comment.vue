@@ -12,7 +12,7 @@
       :comment="item"
       :class="{ 'last-comment': index === curInfo.length - 1 }"
     />
-    <lyric 
+    <Lyric 
       :style="{ transform: translateY }"
       :id="id"
     />
@@ -53,12 +53,7 @@ export default {
   },
   mounted() {
     this.$refs.commentContainer.addEventListener("scroll", this.changeOffset);
-  },
-  updated() {
-    if (this.curInfo.length !== 0) {
-      this.screenHeight = window.innerHeight;
-      this.lastComment = document.querySelector(".last-comment");
-    }
+    this.screenHeight = window.innerHeight;
   },
   methods: {
     shrink() {
@@ -73,6 +68,7 @@ export default {
      * @param {number} options.pageSize - 分页参数,每页多少条数据,默认20
      * @param {number} options.sortType - 排序方式,1:按推荐排序, 2:按热度排序, 3:按时间排序
      * @param {number} options.cursor - 当sortType为3时且页数不是第一页时需传入,值为上一条数据的time
+     * @param {boolean} options.concat - 请求的结果是重新赋值还是concat到原来的结果上
      */
     requestComment({
       id,
@@ -81,6 +77,7 @@ export default {
       pageSize = 20,
       sortType = 1,
       cursor = undefined,
+      concat = true,
     }) {
       if (!this.more) {
         // 没有更多的评论
@@ -115,13 +112,21 @@ export default {
                 id: this.id,
               };
             });
-            this.curInfo = this.curInfo.concat(result);
+            this.curInfo = concat 
+            ? this.curInfo.concat(result)
+            : result;
+            this.$nextTick(() => {
+              this.lastComment = document.querySelector(".last-comment");
+            })
           } else {
-            console.error("歌词获取错误");
+            console.error("评论获取错误");
           }
         });
     },
     load: throttle(function () {
+      if (this == null)  {
+        return;
+      }
       if (
         this.lastComment.getBoundingClientRect().top <= this.screenHeight &&
         this.more &&
@@ -161,8 +166,7 @@ export default {
     id(newId) {
       // 歌曲id发生变更时, 应该重置以下信息
       this.more = true;
-      this.curInfo = [];
-      this.requestComment({ id: newId });
+      this.requestComment({ id: newId, concat: false});
     },
   },
 };

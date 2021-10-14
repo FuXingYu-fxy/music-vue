@@ -86,7 +86,7 @@ export default {
     currentTime(time) {
       // 注意加一
       if (time >= this.LyricList[this.lyricIndex + 1].time) {
-        this.lyricIndex++;
+        this.lyricIndex = (this.lyricIndex + 1) % (this.LyricList.length - 1);
       }
     },
     id(value) {
@@ -131,6 +131,7 @@ export default {
   .highlight {
     color: red;
     transform: scale(1.2);
+    transition: .5s;
   }
 }
 </style>

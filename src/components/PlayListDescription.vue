@@ -17,10 +17,11 @@
             <el-button type="primary" icon="el-icon-circle-plus" />
           </el-button-group>
           <el-button
-            class="operator-item"
-            type="primary"
+            :class="['operator-item']"
+            :type="subscribed ? 'success' : 'primary'"
             icon="el-icon-folder-add"
-            >{{ subscribedCount }}
+            @click="handleSubscribeClick"
+            >{{ subscribedCountState }}
           </el-button>
         </div>
         <div class="tag">
@@ -47,9 +48,12 @@
 </template>
 
 <script>
-import { parseSongInfo } from "@/utils/index.js";
+import { parseSongInfo, debounce } from "@/utils/index.js";
 import { mapMutations } from "vuex";
-import { UPDATE_CURRENT_PLAY ,UPDATE_CURRENT_PLAY_LIST} from "@/store/actionType.js";
+import {
+  UPDATE_CURRENT_PLAY,
+  UPDATE_CURRENT_PLAY_LIST,
+} from "@/store/actionType.js";
 import request from "@/request/request.js";
 export default {
   name: "PlayListDescription",
@@ -78,6 +82,25 @@ export default {
       type: Array,
       require: true,
     },
+    playlistid: {
+      type: String,
+      require: true,
+    },
+  },
+  data() {
+    return {
+      colors: [
+        "#FFC0CB",
+        "#E6E6FA",
+        "#FFA07A",
+        "#FFFACD",
+        "#98FB98",
+        "#AFEEEE",
+        "#B0C4DE",
+      ],
+      subscribedCountState: this.subscribedCount,
+      subscribed: false,
+    };
   },
   methods: {
     ...mapMutations({
@@ -98,19 +121,33 @@ export default {
         }
       }
     },
-  },
-  data() {
-    return {
-      colors: [
-        "#FFC0CB",
-        "#E6E6FA",
-        "#FFA07A",
-        "#FFFACD",
-        "#98FB98",
-        "#AFEEEE",
-        "#B0C4DE",
-      ],
-    };
+    subscribeDebounced: debounce(async function (subscribed, id) {
+      const {data}  = await request.get("/playlist/subscribe", {
+        params: {
+          // 1收藏,  2取消收藏
+          t: subscribed ? 1 : 2,
+          id,
+        },
+      });
+      if (data.code === 200) {
+        this.$message({
+          message: "操作成功",
+          type: "success",
+        });
+      } else {
+        this.$message({
+          message: "操作失败",
+          type: "error"
+        })
+      }
+    }, 2000),
+    async handleSubscribeClick() {
+      this.subscribed = !this.subscribed;
+      this.subscribedCountState = this.subscribed
+        ? this.subscribedCountState + 1
+        : this.subscribedCountState - 1;
+      this.subscribeDebounced(this.subscribed, this.playlistid);
+    },
   },
 };
 </script>
@@ -148,6 +185,7 @@ export default {
   .operator-item {
     margin: 0 3px;
   }
+  color: red;
 }
 
 .tag {
