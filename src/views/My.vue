@@ -1,19 +1,19 @@
 <template>
   <div class="my-container">
     <div class="banner" ref="banner">
-      <img class="avatar" alt="avatar" />
+      <img class="avatar" alt="avatar" :src="avatar" />
       <div class="user-profile">
-        <h1>帮主我们唐门不能群龙无首啊</h1>
+        <h1>{{nickname}}</h1>
         <ul>
           <li>
             <a href="#">
-              <strong>0</strong>
+              <strong>{{follows}}</strong>
               <span>关注</span>
             </a>
           </li>
           <li>
             <a href="">
-              <strong>0</strong>
+              <strong>{{followeds}}</strong>
               <span>粉丝</span>
             </a>
           </li>
@@ -21,7 +21,7 @@
       </div>
     </div>
     <div class="recommend">
-      <h3>Hi,帮助我们唐门不能群龙无首啊</h3>
+      <h3>Hi,{{nickname}}</h3>
       <h5>今日为你推荐</h5>
       <el-tabs v-model="activeName">
         <el-tab-pane label="今日推荐" name="first">
@@ -91,6 +91,7 @@ import UserFavoritePlayList from "@/components/UserFavoritePlayList";
 import PersonalFM from "@/components/PersonalFM";
 import HotPlayList from "../components/HotPlayList.vue";
 import {getNextTime} from '@/utils/index.js';
+import avatarFallback from "../image/avatar-fallback.jpg";
 
 const eventType = {
   HOTPLAYLIST: "HotPlayList",
@@ -121,6 +122,13 @@ export default {
       showScreamPlayList: true,
       // 尖叫榜的id
       screamPlayListIds: null,
+      // user profile
+      avatar: '',
+      nickname: '',
+      // 粉丝
+      followeds: 0,
+      // 关注的人数
+      follows: 0,
     };
   },
   created() {
@@ -233,6 +241,18 @@ export default {
   // ↓ ↓ ↓ ↓ ↓ 生命周期 ↓ ↓ ↓ ↓ ↓ ↓
   mounted() {
     window.addEventListener("scroll", this.updateHeight);
+    // 加载用户信息
+    try {
+      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+      const {avatarUrl, followeds, follows, nickname} = userInfo.profile;
+      this.avatar = avatarUrl;
+      this.nickname = nickname;
+      this.followeds = followeds;
+      this.follows = follows;
+    } catch {
+      this.avatar = avatarFallback;
+      this.nickname = '获取用户名失败';
+    }
   },
   beforeDestroy() {
     window.removeEventListener("scroll", this.updateHeight);
@@ -262,7 +282,7 @@ export default {
   transition: height 0.2s;
 
   .avatar {
-    content: url("../image/avatar-fallback.jpg");
+    content: url("");
     position: relative;
     left: 50%;
     top: 30%;
