@@ -35,7 +35,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 
 # TODO
-- [ ] el-tabs 是加一次性加载所有的子tab中的组件, 即使为显示也会加载, 考虑重写一个tabs
+- [x] el-tabs 是加一次性加载所有的子tab中的组件, 即使为显示也会加载, 使用`keep-alive`和`v-if`解决
 - [x] 优化`PlayList`懒加载
 - [x] 对每日的推荐歌曲, 推荐歌单直接存储到`localstorage`, 当日不再请求
 - [ ] 长列表虚拟滚动

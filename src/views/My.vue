@@ -3,17 +3,17 @@
     <div class="banner" ref="banner">
       <img class="avatar" alt="avatar" :src="avatar" />
       <div class="user-profile">
-        <h1>{{nickname}}</h1>
+        <h1>{{ nickname }}</h1>
         <ul>
           <li>
             <a href="#">
-              <strong>{{follows}}</strong>
+              <strong>{{ follows }}</strong>
               <span>关注</span>
             </a>
           </li>
           <li>
             <a href="">
-              <strong>{{followeds}}</strong>
+              <strong>{{ followeds }}</strong>
               <span>粉丝</span>
             </a>
           </li>
@@ -21,61 +21,76 @@
       </div>
     </div>
     <div class="recommend">
-      <h3>Hi,{{nickname}}</h3>
+      <h3>Hi,{{ nickname }}</h3>
       <h5>今日为你推荐</h5>
       <el-tabs v-model="activeName">
         <el-tab-pane label="今日推荐" name="first">
-          <PlayList :song-details="songDetails" :total-len="totalLen">
-            <template v-slot:calendar>
-              <Calendar />
-            </template>
-          </PlayList>
+          <keep-alive>
+            <PlayList
+              v-if="activeName == 'first'"
+              :song-details="songDetails"
+              :total-len="totalLen"
+            >
+              <template v-slot:calendar>
+                <Calendar />
+              </template>
+            </PlayList>
+          </keep-alive>
         </el-tab-pane>
 
         <el-tab-pane label="私人FM" name="second">
-          <PersonalFM />
+          <keep-alive>
+            <PersonalFM v-if="activeName == 'second'" />
+          </keep-alive>
         </el-tab-pane>
+
         <el-tab-pane label="我的歌单" name="third">
-          <UserFavoritePlayList
-            @goToPlayList="requestSongs"
-            v-show="showUserFavoritePlayList"
-          />
-          <PlayList
-            :ids="ids"
-            :total-len="ids ? ids.length : 0"
-            v-show="!showUserFavoritePlayList"
-          >
-            <template v-slot:back-button>
-              <el-button type="primary" @click="toggle" size="mini"
-                >返回</el-button
+          <keep-alive>
+            <div v-if="activeName == third">
+              <UserFavoritePlayList
+                @goToPlayList="requestSongs"
+                v-show="showUserFavoritePlayList"
+              />
+              <PlayList
+                :ids="ids"
+                :total-len="ids ? ids.length : 0"
+                v-show="!showUserFavoritePlayList"
               >
-            </template>
-          </PlayList>
+                <template v-slot:back-button>
+                  <el-button type="primary" @click="toggle" size="mini"
+                    >返回</el-button
+                  >
+                </template>
+              </PlayList>
+            </div>
+          </keep-alive>
         </el-tab-pane>
 
         <el-tab-pane label="尖叫榜" name="fourth">
-          <div>
-            <div class="scream">
-              <HotPlayList
-                v-show="showScreamPlayList"
-                @goToPlayList="requestSongs"
-              />
+          <keep-alive>
+            <div v-if="activeName == 'fourth'">
+              <div class="scream">
+                <HotPlayList
+                  v-show="showScreamPlayList"
+                  @goToPlayList="requestSongs"
+                />
+              </div>
+              <PlayList
+                :ids="screamPlayListIds"
+                :total-len="screamPlayListIds ? screamPlayListIds.length : 0"
+                v-show="!showScreamPlayList"
+              >
+                <template v-slot:back-button>
+                  <el-button
+                    type="primary"
+                    @click="toggleScreamPlayListState"
+                    size="mini"
+                    >返回</el-button
+                  >
+                </template>
+              </PlayList>
             </div>
-            <PlayList
-              :ids="screamPlayListIds"
-              :total-len="screamPlayListIds ? screamPlayListIds.length : 0"
-              v-show="!showScreamPlayList"
-            >
-              <template v-slot:back-button>
-                <el-button
-                  type="primary"
-                  @click="toggleScreamPlayListState"
-                  size="mini"
-                  >返回</el-button
-                >
-              </template>
-            </PlayList>
-          </div>
+          </keep-alive>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -90,7 +105,7 @@ import Calendar from "@/components/Calendar";
 import UserFavoritePlayList from "@/components/UserFavoritePlayList";
 import PersonalFM from "@/components/PersonalFM";
 import HotPlayList from "../components/HotPlayList.vue";
-import {getNextTime} from '@/utils/index.js';
+import { getNextTime } from "@/utils/index.js";
 import avatarFallback from "../image/avatar-fallback.jpg";
 
 const eventType = {
@@ -123,8 +138,8 @@ export default {
       // 尖叫榜的id
       screamPlayListIds: null,
       // user profile
-      avatar: '',
-      nickname: '',
+      avatar: "",
+      nickname: "",
       // 粉丝
       followeds: 0,
       // 关注的人数
@@ -157,7 +172,7 @@ export default {
             curId,
             timestamp: getNextTime(new Date()),
           };
-          localStorage.setItem('recommendSongs', JSON.stringify(resource));
+          localStorage.setItem("recommendSongs", JSON.stringify(resource));
         } else {
           this.$message({
             message: `${data.msg}, 状态码: ${data.code}`,
@@ -244,14 +259,14 @@ export default {
     // 加载用户信息
     try {
       const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-      const {avatarUrl, followeds, follows, nickname} = userInfo.profile;
+      const { avatarUrl, followeds, follows, nickname } = userInfo.profile;
       this.avatar = avatarUrl;
       this.nickname = nickname;
       this.followeds = followeds;
       this.follows = follows;
     } catch {
       this.avatar = avatarFallback;
-      this.nickname = '获取用户名失败';
+      this.nickname = "获取用户名失败";
     }
   },
   beforeDestroy() {
@@ -266,7 +281,7 @@ export default {
   text-align: center;
 }
 .recommend {
-  transition: .1s;
+  transition: 0.1s;
   background: white;
 }
 .banner {
